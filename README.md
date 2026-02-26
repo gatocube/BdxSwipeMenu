@@ -28,21 +28,21 @@ import { BdxSwipeMenu } from 'bdx-swipe-menu'
     currentLabel="My Node"
     activationMode="click"
     onAddBefore={(id, widgetType) => {
-        // Example chains:
+        // Example chains (3-step):
         // - before → job → script:js
         // - before → job → ai:planner
         // - before → subflow
         console.log('Before', id, widgetType)
     }}
     onAddAfter={(id, widgetType) => {
-        // Example chains:
+        // Example chains (3-step):
         // - after → job → script:py
         // - after → job → ai:worker
         // - after → recent
         console.log('After', id, widgetType)
     }}
     onConfigure={(id, action) => {
-        // Example chains:
+        // Example chains (3-step):
         // - config → attach:note
         // - config → attach:expectation
         // - config → settings
@@ -67,9 +67,10 @@ npm run build:lib  # Library build for package consumption
 
 Live pages:
 
-- Home: `https://gatocube.github.io/BdxSwipeMenu/`
-- Demo: `https://gatocube.github.io/BdxSwipeMenu/demo.html`
-- Docs: `https://gatocube.github.io/BdxSwipeMenu/docs.html`
+- Home: https://gatocube.github.io/BdxSwipeMenu/
+- Demo: https://gatocube.github.io/BdxSwipeMenu/demo.html
+- Docs: https://gatocube.github.io/BdxSwipeMenu/docs.html
+- Long chains: https://gatocube.github.io/BdxSwipeMenu/long-chains.html
 
 ## License
 
