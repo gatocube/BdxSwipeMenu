@@ -13,18 +13,24 @@ export default defineConfig(({ mode }) => {
             },
         },
         base: '/BdxSwipeMenu/',
-        ...(isLib ? {
-            build: {
-                lib: {
-                    entry: path.resolve(__dirname, 'src/index.ts'),
-                    name: 'BdxSwipeMenu',
-                    fileName: 'bdx-swipe-menu',
-                    formats: ['es'] as const,
-                },
-                rollupOptions: {
-                    external: ['react', 'react-dom', 'react/jsx-runtime'],
+        build: isLib ? {
+            lib: {
+                entry: path.resolve(__dirname, 'src/index.ts'),
+                name: 'BdxSwipeMenu',
+                fileName: 'bdx-swipe-menu',
+                formats: ['es'] as const,
+            },
+            rollupOptions: {
+                external: ['react', 'react-dom', 'react/jsx-runtime'],
+            },
+        } : {
+            rollupOptions: {
+                input: {
+                    index: path.resolve(__dirname, 'index.html'),
+                    demo: path.resolve(__dirname, 'demo.html'),
+                    docs: path.resolve(__dirname, 'docs.html'),
                 },
             },
-        } : {}),
+        },
     }
 })
