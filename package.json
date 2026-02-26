@@ -20,6 +20,7 @@
         "build": "tsc -b && vite build",
         "build:lib": "tsc -b && vite build --mode lib",
         "preview": "vite preview",
+        "pretest": "npx playwright install chromium",
         "test": "npx playwright test"
     },
     "peerDependencies": {
