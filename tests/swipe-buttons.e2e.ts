@@ -21,7 +21,7 @@ test.setTimeout(60_000)
 
 async function openButtonsMenuPage(page: Page) {
     await page.goto('/')
-    await expect(page.locator('text=SwipeButtons')).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('text=BdxSwipeMenu')).toBeVisible({ timeout: 10_000 })
 }
 
 /** Click a mock node to show the SwipeButtons radial menu */
