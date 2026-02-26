@@ -4,8 +4,7 @@ Radial swipe menu for touchscreen & desktop — React + framer-motion.
 
 ## Features
 
-- **SwipeButtons** — Radial action menu with 3 activation modes (click, hold, swipe)
-- **NodeButtonsMenu** — Simpler 4-button cardinal menu for node actions
+- **BdxSwipeMenu** — Radial action menu with 3 activation modes (click, hold, swipe)
 - Touch-optimized with iPad-friendly gestures
 - Glassmorphism styling with smooth framer-motion animations
 - Full Playwright E2E test coverage
@@ -19,15 +18,36 @@ pnpm add github:gatocube/BdxSwipeMenu#v0.1.0
 ## Usage
 
 ```tsx
-import { SwipeButtons } from 'bdx-swipe-menu'
+import { BdxSwipeMenu } from 'bdx-swipe-menu'
 
-<SwipeButtons
+// Important: your node element must exist in the DOM as `[data-id="node-1"]`.
+// The menu tracks screen position via `getBoundingClientRect()`.
+
+<BdxSwipeMenu
     nodeId="node-1"
     currentLabel="My Node"
     activationMode="click"
-    onAddBefore={(id, type) => console.log('Before', id, type)}
-    onAddAfter={(id, type) => console.log('After', id, type)}
-    onConfigure={(id, action) => console.log('Config', id, action)}
+    onAddBefore={(id, widgetType) => {
+        // Example chains:
+        // - before → job → script:js
+        // - before → job → ai:planner
+        // - before → subflow
+        console.log('Before', id, widgetType)
+    }}
+    onAddAfter={(id, widgetType) => {
+        // Example chains:
+        // - after → job → script:py
+        // - after → job → ai:worker
+        // - after → recent
+        console.log('After', id, widgetType)
+    }}
+    onConfigure={(id, action) => {
+        // Example chains:
+        // - config → attach:note
+        // - config → attach:expectation
+        // - config → settings
+        console.log('Config', id, action)
+    }}
     onRename={(id, name) => console.log('Rename', id, name)}
     onDismiss={() => console.log('Dismissed')}
 />
@@ -37,15 +57,19 @@ import { SwipeButtons } from 'bdx-swipe-menu'
 
 ```bash
 npm install
-npm run dev        # Vite dev server with demo page
+npm run dev        # Vite dev server (index + demo + docs)
 npm test           # Playwright E2E tests
-npm run build      # Production build (demo page)
+npm run build      # Production build (GitHub Pages site)
 npm run build:lib  # Library build for package consumption
 ```
 
 ## Demo
 
-Live demo: [gatocube.github.io/BdxSwipeMenu](https://gatocube.github.io/BdxSwipeMenu/)
+Live pages:
+
+- Home: `https://gatocube.github.io/BdxSwipeMenu/`
+- Demo: `https://gatocube.github.io/BdxSwipeMenu/demo.html`
+- Docs: `https://gatocube.github.io/BdxSwipeMenu/docs.html`
 
 ## License
 
