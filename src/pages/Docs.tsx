@@ -19,6 +19,8 @@ export function DocsPage() {
 
     const stackblitz = 'https://stackblitz.com/github/gatocube/BdxSwipeMenu?file=src/pages/Demo.tsx'
     const codesandbox = 'https://codesandbox.io/p/sandbox/github/gatocube/BdxSwipeMenu?file=src/pages/Demo.tsx'
+    const stackblitzLong = 'https://stackblitz.com/github/gatocube/BdxSwipeMenu?file=src/pages/LongChains.tsx'
+    const codesandboxLong = 'https://codesandbox.io/p/sandbox/github/gatocube/BdxSwipeMenu?file=src/pages/LongChains.tsx'
 
     return (
         <div style={{
@@ -32,6 +34,7 @@ export function DocsPage() {
                 <nav style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 18 }}>
                     <a href="./index.html" style={navLinkStyle}>Home</a>
                     <a href="./demo.html" style={navLinkStyle}>Demo</a>
+                    <a href="./long-chains.html" style={navLinkStyle}>Long chains</a>
                     <div style={{ flex: 1 }} />
                     <a href="https://github.com/gatocube/BdxSwipeMenu" style={navLinkStyle}>GitHub</a>
                 </nav>
@@ -60,6 +63,9 @@ export function DocsPage() {
                         <a href={stackblitz} style={actionBtn('#8b5cf6')}>Open in StackBlitz</a>
                         <a href={codesandbox} style={actionBtn('#06b6d4')}>Open in CodeSandbox</a>
                         <a href="./demo.html" style={actionBtn('#f59e0b')}>Open Demo Page</a>
+                        <a href={stackblitzLong} style={actionBtn('#a78bfa')}>Long chain on StackBlitz</a>
+                        <a href={codesandboxLong} style={actionBtn('#22d3ee')}>Long chain on CodeSandbox</a>
+                        <a href="./long-chains.html" style={actionBtn('#22c55e')}>Open Long Chains Page</a>
                     </div>
 
                     <section style={{ marginTop: 8 }}>
@@ -137,6 +143,8 @@ export function DocsPage() {
                                 ['activationMode', '"click" | "hold" | "swipe"', 'How the menu opens and expands.'],
                                 ['directions', '("top" | "right" | "bottom" | "left" | "bottom-right")[]', 'Show only some directions (useful near screen edges).'],
                                 ['noOverlap', 'boolean', 'Push buttons outward so they do not overlap the node.'],
+                                ['showActiveChainLinkLine', 'boolean', 'Enabled by default: draws a connector line for the active chain of icons.'],
+                                ['preset', '"default" | "long"', 'Demo-only preset that adds a long real-life review flow chain.'],
                                 ['onAddBefore / onAddAfter', '(nodeId, widgetType) => void', 'widgetType contains chains like "job", "script:js", "ai:planner".'],
                                 ['onConfigure', '(nodeId, action) => void', 'action contains chains like "attach:note", "settings", "delete".'],
                                 ['onRename', '(nodeId, newName) => void', 'Inline rename flow.'],

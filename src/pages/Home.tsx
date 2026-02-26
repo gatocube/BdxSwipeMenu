@@ -70,6 +70,14 @@ export function HomePage() {
                         <div style={pillStyle}>Open docs →</div>
                     </a>
 
+                    <a href="./long-chains.html" style={cardStyle('#a78bfa')}>
+                        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.4 }}>Long chains</div>
+                        <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 6 }}>
+                            Real-life action sequences (review flow) with active chain line.
+                        </div>
+                        <div style={pillStyle}>Open example →</div>
+                    </a>
+
                     <a href="https://github.com/gatocube/BdxSwipeMenu" style={cardStyle('#f59e0b')}>
                         <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.4 }}>Repository</div>
                         <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 6 }}>
