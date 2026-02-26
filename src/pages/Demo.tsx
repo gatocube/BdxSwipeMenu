@@ -10,17 +10,17 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { SwipeButtons, type SwipeButtonsActivation } from '../components/SwipeButtons'
+import { BdxSwipeMenu, type BdxSwipeMenuActivation } from '../BdxSwipeMenu'
 
 // ── Activation mode pill selector ───────────────────────────────────────────────
 
-const MODES: { key: SwipeButtonsActivation; label: string; desc: string }[] = [
+const MODES: { key: BdxSwipeMenuActivation; label: string; desc: string }[] = [
     { key: 'click', label: 'Click', desc: 'Tap / click to open' },
     { key: 'hold', label: 'Hold', desc: 'Long-press ~500 ms' },
     { key: 'swipe', label: 'Swipe', desc: 'Hover to open' },
 ]
 
-function ModeSelector({ mode, onChange }: { mode: SwipeButtonsActivation; onChange: (m: SwipeButtonsActivation) => void }) {
+function ModeSelector({ mode, onChange }: { mode: BdxSwipeMenuActivation; onChange: (m: BdxSwipeMenuActivation) => void }) {
     return (
         <div style={{
             position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)',
@@ -203,7 +203,7 @@ function MockNode({ id, label, color, icon, selected, onClick, onMouseEnter, onH
 // ── Page Component ──────────────────────────────────────────────────────────────
 
 export function ButtonsMenuPage() {
-    const [mode, setMode] = useState<SwipeButtonsActivation>('click')
+    const [mode, setMode] = useState<BdxSwipeMenuActivation>('click')
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [centerLabel, setCenterLabel] = useState('Planner')
     const [log, setLog] = useState<string[]>([])
@@ -315,7 +315,7 @@ export function ButtonsMenuPage() {
                     fontSize: 14, fontWeight: 800, color: '#8b5cf6',
                     fontFamily: "'JetBrains Mono', monospace",
                 }}>
-                    SwipeButtons
+                    BdxSwipeMenu
                 </div>
                 <div style={{ fontSize: 8, color: '#475569', marginTop: 2 }}>
                     Radial action menus · touchscreen optimised
@@ -377,7 +377,7 @@ export function ButtonsMenuPage() {
 
             {/* ── SwipeButtons for selected node ── */}
             {selectedId && (
-                <SwipeButtons
+                <BdxSwipeMenu
                     nodeId={selectedId}
                     currentLabel={currentLabel}
                     activationMode={mode}

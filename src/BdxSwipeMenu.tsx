@@ -1,5 +1,5 @@
 /**
- * SwipeButtons — radial action menu optimised for touchscreen devices.
+ * BdxSwipeMenu — radial action menu optimised for touchscreen devices.
  *
  * This component provides a convenient method to use menus on touchscreen
  * devices like iPad. It is ideal for frequently used actions, because it
@@ -12,17 +12,16 @@
  *   swipe  — menu appears instantly on hover / pointer-enter
  *
  * Layout (default wibeboard configuration):
- *   Top:    Configure (orange) → fan: Rename | Delete | Duplicate
- *   Right:  After (+) purple  → fan: Script | AI → roles | User
- *   Bottom: Rename
- *   Left:   Before (+) purple → fan: Script | AI → roles | User
+ *   Top:    Configure (orange) → fan: Attach | Settings | Delete
+ *   Right:  After (+) purple  → fan: SubFlow | Job → Script | AI | Recent
+ *   Left:   Before (+) purple → fan: SubFlow | Job → Script | AI | Recent
  *
  * Designed to be reusable across projects.
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Settings, Cpu, Code, UserCircle, Trash2, FileCode, Terminal, FileType, Brain, Wrench, Search, Paperclip, Clock, StickyNote, Briefcase, ClipboardCheck, Workflow } from 'lucide-react'
+import { Plus, Settings, Cpu, Code, UserCircle, Trash2, FileCode, Terminal, FileType, Brain, Wrench, Search, Paperclip, Clock, StickyNote, Briefcase, ClipboardCheck, Workflow, Pencil } from 'lucide-react'
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -55,7 +54,8 @@ const AI_ROLES: SubButton[] = [
 
 const CONFIG_ACTIONS: SubButton[] = [
     { key: 'attach', label: 'Attach', icon: Paperclip, color: '#06b6d4' },
-    { key: 'settings', label: 'Settings', icon: Settings, color: '#f59e0b' },
+    { key: 'rename', label: 'Rename', icon: Pencil, color: '#f59e0b' },
+    { key: 'settings', label: 'Settings', icon: Settings, color: '#fb7185' },
     { key: 'delete', label: 'Delete', icon: Trash2, color: '#ef4444' },
 ]
 
@@ -75,16 +75,16 @@ const TILE = 56
 
 // ── Props ───────────────────────────────────────────────────────────────────────
 
-export type SwipeButtonsActivation = 'click' | 'hold' | 'swipe'
-export type SwipeButtonsDirection = 'top' | 'right' | 'bottom' | 'left' | 'bottom-right'
+export type BdxSwipeMenuActivation = 'click' | 'hold' | 'swipe'
+export type BdxSwipeMenuDirection = 'top' | 'right' | 'bottom' | 'left' | 'bottom-right'
 
-export interface SwipeButtonsProps {
+export interface BdxSwipeMenuProps {
     nodeId: string
     currentLabel: string
     /** Activation mode: click (default), hold (long-press), swipe (hover) */
-    activationMode?: SwipeButtonsActivation
+    activationMode?: BdxSwipeMenuActivation
     /** Which directions to show buttons (default: all 4 cardinal) */
-    directions?: SwipeButtonsDirection[]
+    directions?: BdxSwipeMenuDirection[]
     /** When true, buttons are pushed out so they never overlap the node */
     noOverlap?: boolean
     onAddBefore: (nodeId: string, widgetType: string) => void
@@ -129,24 +129,16 @@ function ensureHoldKeyframe() {
     document.head.appendChild(style)
 }
 
-
-// ── Component ───────────────────────────────────────────────────────────────────
+// ── Hooks ───────────────────────────────────────────────────────────────────────
 
 /**
  * Touch-drag tracking for swipe mode.
  * On iPad, pointerEnter doesn't fire during a touch drag. Instead, we
  * track touchmove → elementFromPoint to detect which button the finger
  * is hovering, then call onSwipeHit(testId) to expand sub-menus.
- *
- * Also handles pointermove for CDP-based testing (Chromium converts
- * touch to pointer events).
- *
- * Note: We call onSwipeHit instead of dispatching synthetic PointerEvent
- * because React's event delegation doesn't catch programmatically
- * dispatched native DOM events.
  */
 function useTouchSwipe(
-    activationMode: SwipeButtonsActivation,
+    activationMode: BdxSwipeMenuActivation,
     onSwipeHit: (testId: string | null) => void,
 ) {
     const lastHitRef = useRef<string | null>(null)
@@ -156,7 +148,6 @@ function useTouchSwipe(
     useEffect(() => {
         if (activationMode !== 'swipe') return
 
-        // ── Shared hit-test logic ──
         function hitTest(x: number, y: number) {
             const el = document.elementFromPoint(x, y) as HTMLElement | null
             if (!el) return
@@ -164,7 +155,6 @@ function useTouchSwipe(
             const testId = btn?.getAttribute('data-testid') || null
 
             if (testId !== lastHitRef.current) {
-                // Remove highlight from previous button
                 if (lastHighlightRef.current) {
                     const prev = lastHighlightRef.current
                     prev.style.borderColor = ''
@@ -172,7 +162,6 @@ function useTouchSwipe(
                     lastHighlightRef.current = null
                 }
                 lastHitRef.current = testId
-                // Highlight new button and call onSwipeHit
                 if (btn && testId) {
                     btn.style.borderColor = 'rgba(255,255,255,0.3)'
                     btn.style.boxShadow = '0 4px 20px rgba(0,0,0,0.5), 0 0 12px rgba(255,255,255,0.1)'
@@ -194,7 +183,6 @@ function useTouchSwipe(
             }
         }
 
-        // ── Touch events (real iPad) ──
         const handleTouchStart = (e: TouchEvent) => {
             e.preventDefault()
         }
@@ -210,7 +198,6 @@ function useTouchSwipe(
             if (touch) hitClick(touch.clientX, touch.clientY)
         }
 
-        // ── Pointer events (CDP touch → pointer conversion) ──
         const handlePointerDown = (e: PointerEvent) => {
             if (e.pointerType === 'touch') {
                 activePointerRef.current = e.pointerId
@@ -250,11 +237,14 @@ function useTouchSwipe(
     }, [activationMode, onSwipeHit])
 }
 
-export function SwipeButtons(props: SwipeButtonsProps) {
+// ── Component ───────────────────────────────────────────────────────────────────
+
+export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
     const {
         nodeId, currentLabel, activationMode = 'click',
         directions, noOverlap = false,
         onAddBefore, onAddAfter, onConfigure, onRename,
+        onDismiss,
     } = props
     const dirs = directions ?? ['top', 'right', 'bottom', 'left']
     const [expanded, setExpanded] = useState<null | 'before' | 'after' | 'config'>(null)
@@ -265,18 +255,15 @@ export function SwipeButtons(props: SwipeButtonsProps) {
     const [renaming, setRenaming] = useState(false)
     const [renameValue, setRenameValue] = useState(currentLabel)
     const inputRef = useRef<HTMLInputElement>(null)
-    const containerRef = useRef<HTMLDivElement>(null)
     const [nodeRect, setNodeRect] = useState<DOMRect | null>(null)
 
     const resetSubs = useCallback(() => {
         setJobExpanded(null); setScriptExpanded(null); setAiExpanded(null); setAttachExpanded(false)
     }, [])
 
-    // Touch-drag tracking for swipe mode
-    // Handle swipe hit — map testId to expand actions
     const handleSwipeHit = useCallback((testId: string | null) => {
         if (!testId) return
-        // First-level buttons
+
         if (testId === 'swipe-btn-add-after') {
             setExpanded('after'); resetSubs()
         } else if (testId === 'swipe-btn-add-before') {
@@ -284,7 +271,7 @@ export function SwipeButtons(props: SwipeButtonsProps) {
         } else if (testId === 'swipe-btn-configure') {
             setExpanded('config')
         }
-        // After sub-buttons
+
         else if (testId === 'ext-after-job') {
             setJobExpanded('after'); setScriptExpanded(null); setAiExpanded(null)
         } else if (testId.startsWith('ext-after-script-')) {
@@ -292,7 +279,7 @@ export function SwipeButtons(props: SwipeButtonsProps) {
         } else if (testId.startsWith('ext-after-ai-')) {
             setAiExpanded('after')
         }
-        // Before sub-buttons
+
         else if (testId === 'ext-before-job') {
             setJobExpanded('before'); setScriptExpanded(null); setAiExpanded(null)
         } else if (testId.startsWith('ext-before-script-')) {
@@ -300,7 +287,7 @@ export function SwipeButtons(props: SwipeButtonsProps) {
         } else if (testId.startsWith('ext-before-ai-')) {
             setAiExpanded('before')
         }
-        // Config sub-buttons
+
         else if (testId === 'ext-cfg-attach') {
             setAttachExpanded(true)
         }
@@ -308,7 +295,16 @@ export function SwipeButtons(props: SwipeButtonsProps) {
 
     useTouchSwipe(activationMode, handleSwipeHit)
 
-    // Track node screen position
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key !== 'Escape') return
+            if (renaming) setRenaming(false)
+            else onDismiss()
+        }
+        document.addEventListener('keydown', onKeyDown)
+        return () => document.removeEventListener('keydown', onKeyDown)
+    }, [onDismiss, renaming])
+
     useEffect(() => {
         const update = () => {
             const el = document.querySelector(`[data-id="${nodeId}"]`) as HTMLElement | null
@@ -319,7 +315,6 @@ export function SwipeButtons(props: SwipeButtonsProps) {
         return () => clearInterval(interval)
     }, [nodeId])
 
-    // Focus rename input
     useEffect(() => {
         if (renaming) {
             setRenameValue(currentLabel)
@@ -338,13 +333,11 @@ export function SwipeButtons(props: SwipeButtonsProps) {
         else if (e.key === 'Escape') { e.preventDefault(); setRenaming(false) }
     }, [handleRenameConfirm])
 
-    // Button positions
     const BTN_SIZE = 48
     const positions = useMemo(() => {
         if (!nodeRect) return null
         const cx = nodeRect.left + nodeRect.width / 2
         const cy = nodeRect.top + nodeRect.height / 2
-        // noOverlap: push buttons far enough that they don't cover the node
         const gapX = noOverlap
             ? nodeRect.width / 2 + BTN_SIZE / 2 + 4
             : nodeRect.width / 2 + 16
@@ -363,7 +356,7 @@ export function SwipeButtons(props: SwipeButtonsProps) {
 
     if (!nodeRect || !positions) return null
 
-    const show = (d: SwipeButtonsDirection) => dirs.includes(d)
+    const show = (d: BdxSwipeMenuDirection) => dirs.includes(d)
 
     const stopEvents = {
         onClick: (e: React.MouseEvent) => e.stopPropagation(),
@@ -372,7 +365,7 @@ export function SwipeButtons(props: SwipeButtonsProps) {
     }
 
     return (
-        <div ref={containerRef} data-testid="swipe-buttons-menu"
+        <div data-testid="swipe-buttons-menu"
             style={{
                 position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
                 zIndex: 1000, pointerEvents: 'none',
@@ -380,7 +373,6 @@ export function SwipeButtons(props: SwipeButtonsProps) {
             }}>
 
             <AnimatePresence>
-                {/* ── Config (top) — orange ── */}
                 {show('top') && <MotionButton
                     key="config"
                     testId="swipe-btn-configure"
@@ -396,7 +388,6 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                     onHover={() => setExpanded('config')}
                 />}
 
-                {/* Config sub-buttons: fan above */}
                 {show('top') && expanded === 'config' && CONFIG_ACTIONS.map((sub, i) => (
                     <MotionButton
                         key={`cfg-${sub.key}`}
@@ -410,6 +401,8 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                         onClick={() => {
                             if (sub.key === 'attach') {
                                 setAttachExpanded(prev => !prev)
+                            } else if (sub.key === 'rename') {
+                                setRenaming(true)
                             } else {
                                 onConfigure(nodeId, sub.key)
                                 setExpanded(null); resetSubs()
@@ -422,9 +415,8 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                     />
                 ))}
 
-                {/* Config → Attach sub-types: fan above the Attach button */}
                 {show('top') && expanded === 'config' && attachExpanded && (() => {
-                    const attachBtnX = positions.top.x + (0 - 1) * TILE  // Attach is at index 0
+                    const attachBtnX = positions.top.x + (0 - 1) * TILE
                     const attachBtnY = positions.top.y - TILE
                     return ATTACH_TYPES.map((at, i) => (
                         <MotionButton
@@ -440,7 +432,6 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                     ))
                 })()}
 
-                {/* ── After (right) — purple ── */}
                 {show('right') && <MotionButton
                     key="after"
                     testId="swipe-btn-add-after"
@@ -456,7 +447,6 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                     onHover={() => { setExpanded('after'); resetSubs() }}
                 />}
 
-                {/* After sub-buttons: fan right — User (top), Job (center), Recent (bottom) */}
                 {show('right') && expanded === 'after' && ADD_NODE_TYPES.map((sub, i) => (
                     <MotionButton
                         key={`after-${sub.key}`}
@@ -478,10 +468,9 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                     />
                 ))}
 
-                {/* After → Job sub-types: Sleep, Script & AI */}
                 {show('right') && expanded === 'after' && jobExpanded === 'after' && (() => {
                     const jobBtnX = positions.right.x + TILE
-                    const jobBtnY = positions.right.y  // Job is at center (index 1)
+                    const jobBtnY = positions.right.y
                     return JOB_TYPES.map((jt, i) => (
                         <MotionButton
                             key={`after-job-${jt.key}`}
@@ -513,7 +502,6 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                     ))
                 })()}
 
-                {/* After → Job → Script sub-types */}
                 {show('right') && expanded === 'after' && jobExpanded === 'after' && scriptExpanded === 'after' && (() => {
                     const scriptBtnX = positions.right.x + TILE * 2
                     const scriptBtnY = positions.right.y - TILE
@@ -531,7 +519,6 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                     ))
                 })()}
 
-                {/* After → Job → AI roles */}
                 {show('right') && expanded === 'after' && jobExpanded === 'after' && aiExpanded === 'after' && (() => {
                     const aiBtnX = positions.right.x + TILE * 2
                     const aiBtnY = positions.right.y + TILE
@@ -549,7 +536,6 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                     ))
                 })()}
 
-                {/* ── Before (left) — purple ── */}
                 {show('left') && <MotionButton
                     key="before"
                     testId="swipe-btn-add-before"
@@ -565,7 +551,6 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                     onHover={() => { setExpanded('before'); resetSubs() }}
                 />}
 
-                {/* Before sub-buttons: fan left — User (top), Job (center), Recent (bottom) */}
                 {show('left') && expanded === 'before' && ADD_NODE_TYPES.map((sub, i) => (
                     <MotionButton
                         key={`before-${sub.key}`}
@@ -587,7 +572,6 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                     />
                 ))}
 
-                {/* Before → Job sub-types: User, Script & AI */}
                 {show('left') && expanded === 'before' && jobExpanded === 'before' && (() => {
                     const jobBtnX = positions.left.x - TILE
                     const jobBtnY = positions.left.y
@@ -622,7 +606,6 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                     ))
                 })()}
 
-                {/* Before → Job → Script sub-types */}
                 {show('left') && expanded === 'before' && jobExpanded === 'before' && scriptExpanded === 'before' && (() => {
                     const scriptBtnX = positions.left.x - TILE * 2
                     const scriptBtnY = positions.left.y - TILE
@@ -640,7 +623,6 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                     ))
                 })()}
 
-                {/* Before → Job → AI roles */}
                 {show('left') && expanded === 'before' && jobExpanded === 'before' && aiExpanded === 'before' && (() => {
                     const aiBtnX = positions.left.x - TILE * 2
                     const aiBtnY = positions.left.y + TILE
@@ -659,7 +641,6 @@ export function SwipeButtons(props: SwipeButtonsProps) {
                 })()}
             </AnimatePresence>
 
-            {/* Rename inline input */}
             <AnimatePresence>
                 {renaming && (
                     <motion.div
@@ -723,13 +704,12 @@ function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size =
     dimmed?: boolean
     onClick: () => void
     onHover?: () => void
-    activationMode?: SwipeButtonsActivation
+    activationMode?: BdxSwipeMenuActivation
 }) {
     const half = size / 2
     const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const [holdProgress, setHoldProgress] = useState(false)
 
-    // Clear hold timer on unmount
     useEffect(() => () => {
         if (holdTimerRef.current) clearTimeout(holdTimerRef.current)
     }, [])
@@ -759,24 +739,18 @@ function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size =
         const el = e.currentTarget as HTMLElement
         el.style.borderColor = `${color}88`
         el.style.boxShadow = `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${color}33`
-        if (activationMode === 'swipe' && onHover) {
-            onHover()
-        } else if (activationMode === 'click' && onHover) {
-            onHover()
-        }
+        if ((activationMode === 'swipe' || activationMode === 'click') && onHover) onHover()
     }, [activationMode, onHover, color])
 
     const handleClick = useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
-        if (activationMode === 'hold') return // hold mode uses pointer events
+        if (activationMode === 'hold') return
         onClick()
     }, [activationMode, onClick])
 
-    // SVG ring for hold progress
     const ringRadius = half + 2
     const circumference = 2 * Math.PI * ringRadius
 
-    // Inject keyframe on first render
     useEffect(() => { ensureHoldKeyframe() }, [])
 
     return (
@@ -807,7 +781,6 @@ function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size =
                 ...(active ? { borderColor: `${color}aa`, boxShadow: `0 4px 20px rgba(0,0,0,0.5), 0 0 16px ${color}44` } : {}),
             }}
         >
-            {/* Hold progress ring */}
             {holdProgress && (
                 <svg
                     style={{
@@ -849,3 +822,4 @@ function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size =
         </motion.button>
     )
 }
+
