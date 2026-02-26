@@ -1,1 +1,887 @@
-{}
+{
+  "timestamp": "2026-02-26T14:07:54.137Z",
+  "commit": "2b79f4f",
+  "smoke": {
+    "suites": [],
+    "stats": {}
+  },
+  "full": {
+    "suites": [
+      {
+        "title": "swipe-buttons.e2e.ts",
+        "file": "swipe-buttons.e2e.ts",
+        "column": 0,
+        "line": 0,
+        "specs": [],
+        "suites": [
+          {
+            "title": "SwipeButtons activation modes",
+            "file": "swipe-buttons.e2e.ts",
+            "line": 81,
+            "column": 6,
+            "specs": [
+              {
+                "title": "click/mouse: menu opens on node click",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 514,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:38.016Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-5f667a482a279d1d3911",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 91,
+                "column": 5
+              },
+              {
+                "title": "click/mouse: dismiss menu by clicking node again",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 463,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:38.769Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-0b8dd26cd179a0a581ad",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 97,
+                "column": 5
+              },
+              {
+                "title": "click/mouse: hover After expands sub-menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 922,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:39.253Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-3ff95614e941b84317a1",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 105,
+                "column": 5
+              },
+              {
+                "title": "click/mouse: hover Before expands sub-menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 672,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:40.189Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-ffae3c50a0a8015387e2",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 117,
+                "column": 5
+              },
+              {
+                "title": "click/mouse: hover Config expands config sub-menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 575,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:40.873Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-14853032d9cf7e6f0030",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 129,
+                "column": 5
+              },
+              {
+                "title": "click/mouse: clicking Job sub-button fires action and logs event",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 957,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:41.462Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-7fd5cdc9e9af9ca053bd",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 140,
+                "column": 5
+              },
+              {
+                "title": "click/touch: tap opens menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 439,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:42.433Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-7cf46722e56ae4a65380",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 157,
+                "column": 5
+              },
+              {
+                "title": "hold/mouse: menu opens on click but quick-click does NOT expand sub-menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 694,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:42.889Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-8108a29da7ec21c10635",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 168,
+                "column": 5
+              },
+              {
+                "title": "hold/mouse: long-press expands sub-menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 1121,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:43.596Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-90f9ff4b20d8cb6bad56",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 178,
+                "column": 5
+              },
+              {
+                "title": "hold/touch: tap opens menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 442,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:44.731Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-d4562f5f62b946983506",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 199,
+                "column": 5
+              },
+              {
+                "title": "hold/touch: long-press expands sub-menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 1109,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:45.189Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-836804ba4d5c821b02bb",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 206,
+                "column": 5
+              },
+              {
+                "title": "swipe/mouse: hovering node shows radial menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 353,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:46.313Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-4aee6410c9b50d00d1cf",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 223,
+                "column": 5
+              },
+              {
+                "title": "swipe/mouse: hovering After expands sub-menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 411,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:46.681Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-ada99e4fe7821df4d431",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 229,
+                "column": 5
+              },
+              {
+                "title": "swipe/mouse: hovering Config expands config sub-menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 602,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:47.106Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-9a6a3d948b29cd964f76",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 240,
+                "column": 5
+              },
+              {
+                "title": "swipe/touch: touching node selects it and shows menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 580,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:47.720Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-a9b7c0de70a161659118",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 258,
+                "column": 5
+              },
+              {
+                "title": "swipe/touch: dragging finger from node to After expands sub-menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 691,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:48.314Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-d559d03ff7e91154b824",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 282,
+                "column": 5
+              },
+              {
+                "title": "hold: long-press on node element opens menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 960,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:49.022Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-9ef6adb0c57e23ce7b02",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 320,
+                "column": 5
+              },
+              {
+                "title": "buttons have touch-action:none and user-select:none",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 450,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:49.999Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-9ad96b5a9a8be4279260",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 334,
+                "column": 5
+              },
+              {
+                "title": "swipe container has correct CSS for touch prevention",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 360,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:50.463Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-7b42cc8d64d3133b4dcc",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 354,
+                "column": 5
+              },
+              {
+                "title": "no text selected after hover interaction",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 706,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:50.837Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-c45e97cfe139c4bd7487",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 368,
+                "column": 5
+              },
+              {
+                "title": "all 3 nodes render on the page",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 285,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:51.557Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-6da023a2425c6f91f09c",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 386,
+                "column": 5
+              },
+              {
+                "title": "all main buttons have valid bounding boxes",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 457,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:51.857Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-ceb91c1031f857609994",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 392,
+                "column": 5
+              },
+              {
+                "title": "left edge node opens menu with limited directions",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 413,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:52.325Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-4f0e57f333b4c6425689",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 409,
+                "column": 5
+              },
+              {
+                "title": "right edge node opens menu",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 402,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:52.752Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-ead9bb376196148e8fd4",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 419,
+                "column": 5
+              },
+              {
+                "title": "rename: clicking rename shows input and updates label",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 60000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "chromium",
+                    "projectName": "chromium",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 821,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-02-26T14:07:53.169Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "37e995ede621d717f2ff-a563afd8cec0fea6b510",
+                "file": "swipe-buttons.e2e.ts",
+                "line": 431,
+                "column": 5
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "stats": {
+      "startTime": "2026-02-26T14:07:35.502Z",
+      "duration": 18570.328,
+      "expected": 25,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  }
+}
