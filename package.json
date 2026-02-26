@@ -1,0 +1,49 @@
+{
+    "name": "bdx-swipe-menu",
+    "version": "0.1.0",
+    "type": "module",
+    "description": "Radial swipe menu for touchscreen & desktop — React + framer-motion",
+    "main": "dist/bdx-swipe-menu.js",
+    "module": "dist/bdx-swipe-menu.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/bdx-swipe-menu.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc -b && vite build",
+        "build:lib": "tsc -b && vite build --mode lib",
+        "preview": "vite preview",
+        "test": "npx playwright test"
+    },
+    "peerDependencies": {
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0"
+    },
+    "dependencies": {
+        "framer-motion": "^12.34.3",
+        "lucide-react": "^0.575.0",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.52.0",
+        "@types/react": "^19.2.7",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^5.1.1",
+        "typescript": "~5.9.3",
+        "vite": "^7.3.1",
+        "vite-plugin-dts": "^4.5.4"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/gatocube/BdxSwipeMenu.git"
+    },
+    "license": "MIT"
+}

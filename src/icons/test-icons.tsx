@@ -1,0 +1,364 @@
+/**
+ * Icons Gallery — reference page showing all icons used in wibeboard.
+ *
+ * Displays:
+ * 1. Widget type icons (from WidgetIcon registry)
+ * 2. Category icons
+ * 3. UI icons (Lucide icons used across the app)
+ */
+
+import { useState } from 'react'
+import { WidgetIcon, getAllIconEntries, CATEGORY_ICONS, WIDGET_ICON_COLORS, AnimatedIcon, STATUS_ICONS, STATUS_COLORS, type AnimatedIconName } from './WidgetIcon'
+import { TechIcon, AnimatedTechIcon, ALL_TECH_ICONS, ALL_ANIMATED_TECH_ICONS, TECH_COLORS } from './TechIcons'
+import {
+    // UI icons used across the app
+    Play, Pause, SkipBack, SkipForward, RotateCcw,
+    Menu, X, Layout, Layers, Home, GitBranch, Network,
+    Search, Clock, ChevronDown, Settings, Check,
+    Construction, Sparkles, Cpu,
+    type LucideProps,
+} from 'lucide-react'
+
+// ── All icons used in wibeboard ─────────────────────────────────────────────────
+
+interface IconItem {
+    name: string
+    component: React.ComponentType<LucideProps>
+    color: string
+    usage: string
+}
+
+const UI_ICONS: IconItem[] = [
+    // Navigation
+    { name: 'Home', component: Home, color: '#94a3b8', usage: 'Sidebar: Home page' },
+    { name: 'Layout', component: Layout, color: '#94a3b8', usage: 'Sidebar: Builder Demo Complex' },
+    { name: 'GitBranch', component: GitBranch, color: '#94a3b8', usage: 'Sidebar: Two-Node Scenario' },
+    { name: 'Network', component: Network, color: '#94a3b8', usage: 'Sidebar: Four-Node Concurrent' },
+    { name: 'Layers', component: Layers, color: '#94a3b8', usage: 'Sidebar: Widget Gallery' },
+    { name: 'Menu', component: Menu, color: '#94a3b8', usage: 'Sidebar toggle (open)' },
+    { name: 'X', component: X, color: '#94a3b8', usage: 'Sidebar toggle (close), search clear' },
+
+    // Playback
+    { name: 'Play', component: Play, color: '#28c840', usage: 'Step player, script run button' },
+    { name: 'Pause', component: Pause, color: '#f59e0b', usage: 'Step player: pause' },
+    { name: 'SkipBack', component: SkipBack, color: '#94a3b8', usage: 'Step player: back' },
+    { name: 'SkipForward', component: SkipForward, color: '#94a3b8', usage: 'Step player: forward' },
+    { name: 'RotateCcw', component: RotateCcw, color: '#94a3b8', usage: 'Step player: reset' },
+
+    // Actions
+    { name: 'Settings', component: Settings, color: '#64748b', usage: 'Script node: edit button' },
+    { name: 'Check', component: Check, color: '#28c840', usage: 'Script node: done state' },
+    { name: 'Search', component: Search, color: '#64748b', usage: 'Widget selector: search input' },
+    { name: 'Clock', component: Clock, color: '#64748b', usage: 'Widget selector: recently used' },
+    { name: 'ChevronDown', component: ChevronDown, color: '#8b5cf6', usage: 'Widget selector: show more' },
+    { name: 'Construction', component: Construction, color: '#f59e0b', usage: 'Placeholder node icon' },
+    { name: 'Cpu', component: Cpu, color: '#8b5cf6', usage: 'Fallback icon for unknown types' },
+]
+
+const ANIMATED_ICONS: { name: AnimatedIconName; label: string; color: string }[] = [
+    // Original 19
+    { name: 'spinner', label: 'Loading spinner', color: '#3b82f6' },
+    { name: 'pulse', label: 'Active/alive pulse', color: '#22c55e' },
+    { name: 'thinking', label: 'AI thinking', color: '#8b5cf6' },
+    { name: 'loading-dots', label: 'Loading dots', color: '#f59e0b' },
+    { name: 'processing', label: 'Processing data', color: '#06b6d4' },
+    { name: 'success', label: 'Success check-in', color: '#22c55e' },
+    { name: 'error-shake', label: 'Error shake', color: '#ef4444' },
+    { name: 'radar', label: 'Radar scanning', color: '#06b6d4' },
+    { name: 'data-stream', label: 'Data stream bars', color: '#8b5cf6' },
+    { name: 'heartbeat', label: 'Heartbeat pulse', color: '#ef4444' },
+    { name: 'orbit', label: 'Orbiting dots', color: '#f59e0b' },
+    { name: 'wave', label: 'Audio wave', color: '#22c55e' },
+    { name: 'typing', label: 'Typing indicator', color: '#94a3b8' },
+    { name: 'sync', label: 'Sync rotation', color: '#06b6d4' },
+    { name: 'download', label: 'Download bounce', color: '#22c55e' },
+    { name: 'signal', label: 'Signal broadcast', color: '#8b5cf6' },
+    { name: 'hourglass', label: 'Hourglass flip', color: '#f59e0b' },
+    { name: 'ripple', label: 'Ripple effect', color: '#3b82f6' },
+    { name: 'scan-line', label: 'Scan line', color: '#22c55e' },
+    // New: Progress & Loading
+    { name: 'progress-ring', label: 'Progress ring', color: '#3b82f6' },
+    { name: 'progress-bar', label: 'Progress bar', color: '#8b5cf6' },
+    { name: 'loading-wave', label: 'Loading wave', color: '#06b6d4' },
+    { name: 'bounce', label: 'Bouncing ball', color: '#f59e0b' },
+    { name: 'progress-dots', label: 'Progress dots', color: '#22c55e' },
+    { name: 'pixel-load', label: 'Pixel grid loader', color: '#8b5cf6' },
+    // New: Status & Feedback
+    { name: 'alert-flash', label: 'Alert flash', color: '#ef4444' },
+    { name: 'check-bounce', label: 'Check bounce', color: '#22c55e' },
+    { name: 'traffic-light', label: 'Traffic light', color: '#f59e0b' },
+    // New: Tool/Action
+    { name: 'gear-spin', label: 'Gear spin', color: '#64748b' },
+    { name: 'upload-pulse', label: 'Upload pulse', color: '#3b82f6' },
+    { name: 'search-scan', label: 'Search scan', color: '#f59e0b' },
+    { name: 'clock-tick', label: 'Clock tick', color: '#94a3b8' },
+    { name: 'terminal-blink', label: 'Terminal cursor', color: '#22c55e' },
+    { name: 'rewind', label: 'Rewind spin', color: '#8b5cf6' },
+    // New: Data & Visualization
+    { name: 'waveform', label: 'Waveform', color: '#06b6d4' },
+    { name: 'radio-wave', label: 'Radio wave', color: '#8b5cf6' },
+    { name: 'matrix-rain', label: 'Matrix rain', color: '#22c55e' },
+    { name: 'stack-build', label: 'Stack build', color: '#f59e0b' },
+    // New: Effects & Decorative
+    { name: 'crossfade', label: 'Crossfade', color: '#3b82f6' },
+    { name: 'dna-helix', label: 'DNA helix', color: '#8b5cf6' },
+    { name: 'fire-flicker', label: 'Fire flicker', color: '#f97316' },
+    { name: 'lightning-bolt', label: 'Lightning bolt', color: '#fbbf24' },
+    { name: 'magnet-pull', label: 'Magnet pull', color: '#ef4444' },
+    { name: 'sparkle-burst', label: 'Sparkle burst', color: '#c084fc' },
+    { name: 'morse-code', label: 'Morse code', color: '#22c55e' },
+    { name: 'pendulum', label: 'Pendulum', color: '#f59e0b' },
+    { name: 'ping-pong', label: 'Ping pong', color: '#3b82f6' },
+    { name: 'satellite', label: 'Satellite orbit', color: '#06b6d4' },
+    { name: 'telescope', label: 'Telescope scan', color: '#8b5cf6' },
+]
+
+// ── Component ────────────────────────────────────────────────────────────────────
+
+export function IconsGalleryPage() {
+    const [hovered, setHovered] = useState<string | null>(null)
+    const widgetIcons = getAllIconEntries()
+    const categoryEntries = Object.entries(CATEGORY_ICONS)
+
+    return (
+        <div style={{
+            width: '100%', height: '100%',
+            background: '#0a0a1a',
+            overflow: 'auto',
+            padding: '24px 32px',
+            fontFamily: 'Inter',
+        }}>
+            {/* Page header */}
+            <div style={{ marginBottom: 24 }}>
+                <h1 style={{
+                    fontSize: 18, fontWeight: 700, color: '#e2e8f0',
+                    margin: 0, display: 'flex', alignItems: 'center', gap: 8,
+                }}>
+                    <Sparkles size={18} color="#8b5cf6" />
+                    Icon Reference
+                </h1>
+                <p style={{ fontSize: 11, color: '#64748b', margin: '4px 0 0' }}>
+                    All Lucide icons used across wibeboard — consistent SVG, no emojis
+                </p>
+            </div>
+
+            {/* ── 1. Widget Type Icons ── */}
+            <Section title="Widget Types" subtitle="Icons for node types in the flow builder">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
+                    {widgetIcons.map(entry => (
+                        <IconCard
+                            key={entry.type}
+                            name={entry.name}
+                            label={entry.type}
+                            color={entry.color}
+                            isHovered={hovered === entry.type}
+                            onHover={setHovered}
+                        >
+                            <WidgetIcon type={entry.type} size={24} />
+                        </IconCard>
+                    ))}
+                </div>
+            </Section>
+
+            {/* ── 2. Category Icons ── */}
+            <Section title="Categories" subtitle="Icons for widget category grouping">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
+                    {categoryEntries.map(([key, Icon]) => (
+                        <IconCard
+                            key={key}
+                            name={Icon.displayName || key}
+                            label={key}
+                            color={WIDGET_ICON_COLORS[key.toLowerCase()] || '#8b5cf6'}
+                            isHovered={hovered === `cat-${key}`}
+                            onHover={(id) => setHovered(id ? `cat-${key}` : null)}
+                        >
+                            <Icon size={24} color={WIDGET_ICON_COLORS[key.toLowerCase()] || '#8b5cf6'} />
+                        </IconCard>
+                    ))}
+                </div>
+            </Section>
+
+            {/* ── 3. UI Icons ── */}
+            <Section title="UI Icons" subtitle="Navigation, playback, and action icons">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
+                    {UI_ICONS.map(icon => {
+                        const Icon = icon.component
+                        return (
+                            <IconCard
+                                key={icon.name}
+                                name={icon.name}
+                                label={icon.usage}
+                                color={icon.color}
+                                isHovered={hovered === `ui-${icon.name}`}
+                                onHover={(id) => setHovered(id ? `ui-${icon.name}` : null)}
+                            >
+                                <Icon size={24} color={icon.color} />
+                            </IconCard>
+                        )
+                    })}
+                </div>
+            </Section>
+
+            {/* ── 4. Status Icons ── */}
+            <Section title="Status Icons" subtitle="Node state indicators with semantic colors">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
+                    {Object.entries(STATUS_ICONS).map(([key, Icon]) => (
+                        <IconCard
+                            key={key}
+                            name={key}
+                            label={`Status: ${key}`}
+                            color={STATUS_COLORS[key] || '#8b5cf6'}
+                            isHovered={hovered === `status-${key}`}
+                            onHover={(id) => setHovered(id ? `status-${key}` : null)}
+                        >
+                            <Icon size={24} color={STATUS_COLORS[key] || '#8b5cf6'} />
+                        </IconCard>
+                    ))}
+                </div>
+            </Section>
+
+            {/* ── 5. Animated Icons ── */}
+            <Section title="Animated Icons" subtitle="Framer-motion loading and status animations">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
+                    {ANIMATED_ICONS.map(icon => (
+                        <IconCard
+                            key={icon.name}
+                            name={icon.name}
+                            label={icon.label}
+                            color={icon.color}
+                            isHovered={hovered === `anim-${icon.name}`}
+                            onHover={(id) => setHovered(id ? `anim-${icon.name}` : null)}
+                        >
+                            <AnimatedIcon name={icon.name} size={24} color={icon.color} />
+                        </IconCard>
+                    ))}
+                </div>
+            </Section>
+
+            {/* ── 6. Tech Logo Icons ── */}
+            <Section title="Tech Logos" subtitle="Custom SVG icons for frameworks, languages, and tools">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
+                    {ALL_TECH_ICONS.map(name => (
+                        <IconCard
+                            key={name}
+                            name={name}
+                            label={`Tech: ${name}`}
+                            color={TECH_COLORS[name] || '#8b5cf6'}
+                            isHovered={hovered === `tech-${name}`}
+                            onHover={(id) => setHovered(id ? `tech-${name}` : null)}
+                        >
+                            <TechIcon name={name} size={24} />
+                        </IconCard>
+                    ))}
+                </div>
+            </Section>
+
+            {/* ── 7. Animated Tech Icons ── */}
+            <Section title="Animated Tech Icons" subtitle="Dev workflow animations for CI/CD, builds, and git operations">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
+                    {ALL_ANIMATED_TECH_ICONS.map(icon => (
+                        <IconCard
+                            key={icon.name}
+                            name={icon.name}
+                            label={icon.label}
+                            color={icon.color}
+                            isHovered={hovered === `atech-${icon.name}`}
+                            onHover={(id) => setHovered(id ? `atech-${icon.name}` : null)}
+                        >
+                            <AnimatedTechIcon name={icon.name} size={24} color={icon.color} />
+                        </IconCard>
+                    ))}
+                </div>
+            </Section>
+
+            {/* ── Summary ── */}
+            <div style={{
+                marginTop: 24, padding: '12px 16px',
+                background: 'rgba(139,92,246,0.05)',
+                border: '1px solid rgba(139,92,246,0.15)',
+                borderRadius: 8,
+            }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: '#8b5cf6', marginBottom: 4 }}>
+                    Icon System Summary
+                </div>
+                <div style={{ fontSize: 9, color: '#94a3b8', lineHeight: 1.6 }}>
+                    <strong style={{ color: '#e2e8f0' }}>{widgetIcons.length}</strong> widget type icons ·{' '}
+                    <strong style={{ color: '#e2e8f0' }}>{categoryEntries.length}</strong> category icons ·{' '}
+                    <strong style={{ color: '#e2e8f0' }}>{Object.keys(STATUS_ICONS).length}</strong> status icons ·{' '}
+                    <strong style={{ color: '#e2e8f0' }}>{ANIMATED_ICONS.length}</strong> animated icons ·{' '}
+                    <strong style={{ color: '#e2e8f0' }}>{ALL_TECH_ICONS.length}</strong> tech logos ·{' '}
+                    <strong style={{ color: '#e2e8f0' }}>{ALL_ANIMATED_TECH_ICONS.length}</strong> animated tech icons ·{' '}
+                    <strong style={{ color: '#e2e8f0' }}>{UI_ICONS.length}</strong> UI icons ·{' '}
+                    Lucide React + Framer Motion + Custom SVG
+                </div>
+            </div>
+        </div>
+    )
+}
+
+// ── Reusable components ─────────────────────────────────────────────────────────
+
+function Section({ title, subtitle, children }: {
+    title: string
+    subtitle: string
+    children: React.ReactNode
+}) {
+    return (
+        <div style={{ marginBottom: 20 }}>
+            <div style={{
+                fontSize: 11, fontWeight: 700, color: '#e2e8f0',
+                marginBottom: 2, textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+            }}>
+                {title}
+            </div>
+            <div style={{ fontSize: 9, color: '#64748b', marginBottom: 10 }}>
+                {subtitle}
+            </div>
+            {children}
+        </div>
+    )
+}
+
+function IconCard({
+    name, label, color, isHovered, onHover, children,
+}: {
+    name: string
+    label: string
+    color: string
+    isHovered: boolean
+    onHover: (id: string | null) => void
+    children: React.ReactNode
+}) {
+    return (
+        <div
+            onMouseEnter={() => onHover(name)}
+            onMouseLeave={() => onHover(null)}
+            style={{
+                padding: '12px 10px',
+                borderRadius: 8,
+                background: isHovered ? `${color}10` : 'rgba(255,255,255,0.02)',
+                border: `1px solid ${isHovered ? `${color}33` : 'rgba(255,255,255,0.06)'}`,
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', gap: 6,
+                transition: 'all 0.15s',
+                cursor: 'default',
+            }}
+        >
+            {children}
+            <div style={{
+                fontSize: 9, fontWeight: 600, color: isHovered ? color : '#e2e8f0',
+                textAlign: 'center',
+            }}>
+                {name}
+            </div>
+            <div style={{
+                fontSize: 7, color: '#64748b',
+                textAlign: 'center', lineHeight: 1.3,
+                maxWidth: 120,
+            }}>
+                {label}
+            </div>
+        </div>
+    )
+}
