@@ -21,7 +21,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Settings, Cpu, Code, UserCircle, Trash2, FileCode, Terminal, FileType, Brain, Wrench, Search, Paperclip, Clock, StickyNote, Briefcase, ClipboardCheck, Workflow } from 'lucide-react'
+import { Plus, Settings, Cpu, Code, UserCircle, Trash2, FileCode, Terminal, FileType, Brain, Wrench, Search, Paperclip, Clock, StickyNote, Briefcase, ClipboardCheck, Workflow, Pencil } from 'lucide-react'
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -54,7 +54,8 @@ const AI_ROLES: SubButton[] = [
 
 const CONFIG_ACTIONS: SubButton[] = [
     { key: 'attach', label: 'Attach', icon: Paperclip, color: '#06b6d4' },
-    { key: 'settings', label: 'Settings', icon: Settings, color: '#f59e0b' },
+    { key: 'rename', label: 'Rename', icon: Pencil, color: '#f59e0b' },
+    { key: 'settings', label: 'Settings', icon: Settings, color: '#fb7185' },
     { key: 'delete', label: 'Delete', icon: Trash2, color: '#ef4444' },
 ]
 
@@ -243,6 +244,7 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
         nodeId, currentLabel, activationMode = 'click',
         directions, noOverlap = false,
         onAddBefore, onAddAfter, onConfigure, onRename,
+        onDismiss,
     } = props
     const dirs = directions ?? ['top', 'right', 'bottom', 'left']
     const [expanded, setExpanded] = useState<null | 'before' | 'after' | 'config'>(null)
@@ -292,6 +294,16 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
     }, [resetSubs])
 
     useTouchSwipe(activationMode, handleSwipeHit)
+
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key !== 'Escape') return
+            if (renaming) setRenaming(false)
+            else onDismiss()
+        }
+        document.addEventListener('keydown', onKeyDown)
+        return () => document.removeEventListener('keydown', onKeyDown)
+    }, [onDismiss, renaming])
 
     useEffect(() => {
         const update = () => {
@@ -389,6 +401,8 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
                         onClick={() => {
                             if (sub.key === 'attach') {
                                 setAttachExpanded(prev => !prev)
+                            } else if (sub.key === 'rename') {
+                                setRenaming(true)
                             } else {
                                 onConfigure(nodeId, sub.key)
                                 setExpanded(null); resetSubs()
