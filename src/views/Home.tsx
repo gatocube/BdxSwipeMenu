@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { TopNav } from '../components/TopNav'
 import { Crosshair, BookOpen, Smartphone, Link2, Github, Sparkles } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -99,34 +100,39 @@ export function HomePage() {
 
                         {/* Feature cards with square icon buttons */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {FEATURES.map((f) => (
-                                <a key={f.title} href={f.href} className="group no-underline">
-                                    <Card className="bg-[#0f0f1a]/80 border-white/[0.06] hover:border-white/[0.15] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden">
-                                        <CardContent className="p-5 flex flex-col gap-3">
-                                            {/* Square icon button with glow */}
-                                            <div className={`relative w-11 h-11 rounded-xl bg-gradient-to-br ${f.gradient} flex items-center justify-center shadow-lg ${f.glow} ring-1 ${f.ring}`}>
-                                                <f.icon className="w-5 h-5 text-white" />
-                                                <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${f.gradient} opacity-0 group-hover:opacity-40 blur-xl transition-opacity duration-500`} />
-                                            </div>
-
-                                            <div>
-                                                <div className="text-sm font-bold tracking-tight text-slate-200 mb-1">
-                                                    {f.title}
+                            {FEATURES.map((f) => {
+                                const isExternal = f.href.startsWith('http')
+                                const Wrapper = isExternal ? 'a' : Link
+                                const extraProps = isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {}
+                                return (
+                                    <Wrapper key={f.title} href={f.href} className="group no-underline" {...extraProps}>
+                                        <Card className="bg-[#0f0f1a]/80 border-white/[0.06] hover:border-white/[0.15] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden">
+                                            <CardContent className="p-5 flex flex-col gap-3">
+                                                {/* Square icon button with glow */}
+                                                <div className={`relative w-11 h-11 rounded-xl bg-gradient-to-br ${f.gradient} flex items-center justify-center shadow-lg ${f.glow} ring-1 ${f.ring}`}>
+                                                    <f.icon className="w-5 h-5 text-white" />
+                                                    <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${f.gradient} opacity-0 group-hover:opacity-40 blur-xl transition-opacity duration-500`} />
                                                 </div>
-                                                <div className="text-xs text-slate-500 leading-relaxed">
-                                                    {f.desc}
-                                                </div>
-                                            </div>
 
-                                            <div className="mt-auto pt-1">
-                                                <span className="inline-flex items-center text-[11px] font-bold tracking-wide text-slate-500 group-hover:text-slate-300 transition-colors duration-200">
-                                                    Open →
-                                                </span>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </a>
-                            ))}
+                                                <div>
+                                                    <div className="text-sm font-bold tracking-tight text-slate-200 mb-1">
+                                                        {f.title}
+                                                    </div>
+                                                    <div className="text-xs text-slate-500 leading-relaxed">
+                                                        {f.desc}
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-auto pt-1">
+                                                    <span className="inline-flex items-center text-[11px] font-bold tracking-wide text-slate-500 group-hover:text-slate-300 transition-colors duration-200">
+                                                        Open →
+                                                    </span>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </Wrapper>
+                                )
+                            })}
                         </div>
                     </div>
                 </div>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { TopNav } from '../components/TopNav'
 
 export function DocsPage() {
@@ -59,10 +60,10 @@ export function DocsPage() {
                     }}>
                         <a href={stackblitz} style={actionBtn('#8b5cf6')}>Open in StackBlitz</a>
                         <a href={codesandbox} style={actionBtn('#06b6d4')}>Open in CodeSandbox</a>
-                        <a href="/demo" style={actionBtn('#f59e0b')}>Open Demo Page</a>
+                        <Link href="/demo" style={actionBtn('#f59e0b')}>Open Demo Page</Link>
                         <a href={stackblitzLong} style={actionBtn('#a78bfa')}>Long chain on StackBlitz</a>
                         <a href={codesandboxLong} style={actionBtn('#22d3ee')}>Long chain on CodeSandbox</a>
-                        <a href="/long-chains" style={actionBtn('#22c55e')}>Open Long Chains Page</a>
+                        <Link href="/long-chains" style={actionBtn('#22c55e')}>Open Long Chains Page</Link>
                     </div>
 
                     <section style={{ marginTop: 8 }}>

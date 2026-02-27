@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { TopNav } from '../components/TopNav'
 import { Crosshair, Smartphone, Link2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -48,7 +49,7 @@ export function ExamplesPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {EXAMPLES.map(ex => (
-                        <a key={ex.title} href={ex.href} className="group no-underline">
+                        <Link key={ex.title} href={ex.href} className="group no-underline">
                             <Card className="bg-[#0a0a14]/80 border-white/[0.06] hover:border-white/[0.15] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl h-full">
                                 <CardContent className="p-6 flex flex-col gap-4">
                                     {/* Square icon with glow */}
@@ -68,7 +69,7 @@ export function ExamplesPage() {
                                     </div>
                                 </CardContent>
                             </Card>
-                        </a>
+                        </Link>
                     ))}
                 </div>
             </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Home, Github, Menu as MenuIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -44,7 +45,7 @@ export function TopNav() {
             )}
         >
             {/* Brand — left */}
-            <a href="/" className="flex items-center gap-2 no-underline justify-self-start group">
+            <Link href="/" className="flex items-center gap-2 no-underline justify-self-start group">
                 <span className="text-lg font-black tracking-tight bg-gradient-to-r from-violet-500 to-cyan-400 bg-clip-text text-transparent">
                     Bdx
                 </span>
@@ -54,14 +55,14 @@ export function TopNav() {
                 )}>
                     SwipeMenu
                 </span>
-            </a>
+            </Link>
 
             {/* Nav Links — center */}
             <div className="flex items-center gap-1">
                 {NAV_ITEMS.map(item => {
                     const active = isActive(item)
                     return (
-                        <a
+                        <Link
                             key={item.label}
                             href={item.href}
                             className={cn(
@@ -72,7 +73,7 @@ export function TopNav() {
                             )}
                         >
                             {item.label}
-                        </a>
+                        </Link>
                     )
                 })}
             </div>

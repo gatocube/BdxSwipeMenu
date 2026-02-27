@@ -38,7 +38,7 @@ export default defineConfig({
             command: 'NEXT_PUBLIC_BASE_PATH= npx next dev -p 5174 --turbopack',
             url: 'http://localhost:5174',
             reuseExistingServer: !process.env.CI,
-            timeout: 30_000,
+            timeout: 60_000,
         },
     }),
 })
