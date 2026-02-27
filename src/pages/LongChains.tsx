@@ -129,8 +129,8 @@ function formatReviewAction(action: string) {
     if (!action.startsWith('review:')) return action
     const step = action.replace('review:', '')
     const pretty = step
-        .replaceAll('-', ' ')
-        .replace(/\b\w/g, m => m.toUpperCase())
+        .split('-').join(' ')
+        .replace(/\b\w/g, (m: string) => m.toUpperCase())
     return `review → ${pretty}`
 }
 

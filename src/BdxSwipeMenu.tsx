@@ -389,8 +389,6 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
         }
     }, [nodeRect, noOverlap])
 
-    if (!nodeRect || !positions) return null
-
     const show = (d: BdxSwipeMenuDirection) => dirs.includes(d)
 
     const cfgActions = preset === 'long' ? CONFIG_ACTIONS_LONG : CONFIG_ACTIONS
@@ -518,6 +516,8 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
 
         const out: Btn[] = []
         const add = (b: Btn) => out.push(b)
+
+        if (!positions) return out
 
         if (show('top')) {
             add({
@@ -822,6 +822,8 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
             .filter(Boolean) as { x: number; y: number }[]
         return pts
     }, [activeChainIds, coordsByTestId])
+
+    if (!nodeRect || !positions) return null
 
     return (
         <div data-testid="swipe-buttons-menu"
