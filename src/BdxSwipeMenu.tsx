@@ -21,7 +21,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Settings, Cpu, Code, UserCircle, Trash2, FileCode, Terminal, FileType, Brain, Wrench, Search, Paperclip, Clock, StickyNote, Briefcase, ClipboardCheck, Workflow, Pencil } from 'lucide-react'
+import { Plus, Settings, Cpu, Code, UserCircle, Trash2, FileCode, Terminal, FileType, Brain, Wrench, Search, Paperclip, Clock, StickyNote, Briefcase, ClipboardCheck, Workflow, Pencil, MessageSquareText, GitPullRequest, AlertTriangle, BadgeCheck, Link } from 'lucide-react'
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -59,6 +59,23 @@ const CONFIG_ACTIONS: SubButton[] = [
     { key: 'delete', label: 'Delete', icon: Trash2, color: '#ef4444' },
 ]
 
+const CONFIG_ACTIONS_LONG: SubButton[] = [
+    { key: 'attach', label: 'Attach', icon: Paperclip, color: '#06b6d4' },
+    { key: 'review', label: 'Review', icon: GitPullRequest, color: '#a78bfa' },
+    { key: 'rename', label: 'Rename', icon: Pencil, color: '#f59e0b' },
+    { key: 'settings', label: 'Settings', icon: Settings, color: '#fb7185' },
+    { key: 'delete', label: 'Delete', icon: Trash2, color: '#ef4444' },
+]
+
+const REVIEW_FLOW_STEPS: SubButton[] = [
+    { key: 'respond', label: 'Respond', icon: MessageSquareText, color: '#a78bfa' },
+    { key: 'request-changes', label: 'Request changes', icon: GitPullRequest, color: '#c084fc' },
+    { key: 'blockers', label: 'Blockers', icon: AlertTriangle, color: '#f59e0b' },
+    { key: 'tests-failed', label: 'Tests failed', icon: AlertTriangle, color: '#fb7185' },
+    { key: 'proof-link', label: 'Proof link', icon: Link, color: '#22d3ee' },
+    { key: 'approved', label: 'Approved', icon: BadgeCheck, color: '#22c55e' },
+]
+
 const ATTACH_TYPES: SubButton[] = [
     { key: 'expectation', label: 'Expect', icon: ClipboardCheck, color: '#22d3ee' },
     { key: 'note', label: 'Note', icon: StickyNote, color: '#fbbf24' },
@@ -71,7 +88,7 @@ const SCRIPT_TYPES: SubButton[] = [
 ]
 
 // Virtual tile grid — all button positions snap to multiples of TILE
-const TILE = 56
+const TILE = 64
 
 // ── Props ───────────────────────────────────────────────────────────────────────
 
@@ -87,6 +104,13 @@ export interface BdxSwipeMenuProps {
     directions?: BdxSwipeMenuDirection[]
     /** When true, buttons are pushed out so they never overlap the node */
     noOverlap?: boolean
+    /**
+     * When true (default), draws a connector line for the current active chain,
+     * so users can always see the “path” they are in.
+     */
+    showActiveChainLinkLine?: boolean
+    /** Demo preset. Library default is 'default'. */
+    preset?: 'default' | 'long'
     onAddBefore: (nodeId: string, widgetType: string) => void
     onAddAfter: (nodeId: string, widgetType: string) => void
     onConfigure: (nodeId: string, action: string) => void
@@ -96,14 +120,14 @@ export interface BdxSwipeMenuProps {
 
 // ── Shared button style ─────────────────────────────────────────────────────────
 
-function btnStyle(color: string, size = 48): React.CSSProperties {
+function btnStyle(color: string, size = 56, dimmed = false): React.CSSProperties {
     return {
         width: size, height: size,
-        borderRadius: size <= 40 ? 12 : 14,
-        border: `1.5px solid ${color}44`,
-        background: 'rgba(15,15,26,0.92)',
+        borderRadius: size <= 44 ? 12 : 16,
+        border: `1.5px solid ${dimmed ? 'rgba(148,163,184,0.25)' : `${color}44`}`,
+        background: dimmed ? 'rgba(15,15,26,0.75)' : 'rgba(15,15,26,0.92)',
         backdropFilter: 'blur(12px)',
-        color,
+        color: dimmed ? '#94a3b8' : color,
         cursor: 'pointer',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
@@ -243,6 +267,8 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
     const {
         nodeId, currentLabel, activationMode = 'click',
         directions, noOverlap = false,
+        showActiveChainLinkLine = true,
+        preset = 'default',
         onAddBefore, onAddAfter, onConfigure, onRename,
         onDismiss,
     } = props
@@ -252,13 +278,14 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
     const [scriptExpanded, setScriptExpanded] = useState<null | 'after' | 'before'>(null)
     const [aiExpanded, setAiExpanded] = useState<null | 'after' | 'before'>(null)
     const [attachExpanded, setAttachExpanded] = useState(false)
+    const [reviewStep, setReviewStep] = useState<number>(-1)
     const [renaming, setRenaming] = useState(false)
     const [renameValue, setRenameValue] = useState(currentLabel)
     const inputRef = useRef<HTMLInputElement>(null)
     const [nodeRect, setNodeRect] = useState<DOMRect | null>(null)
 
     const resetSubs = useCallback(() => {
-        setJobExpanded(null); setScriptExpanded(null); setAiExpanded(null); setAttachExpanded(false)
+        setJobExpanded(null); setScriptExpanded(null); setAiExpanded(null); setAttachExpanded(false); setReviewStep(-1)
     }, [])
 
     const handleSwipeHit = useCallback((testId: string | null) => {
@@ -269,7 +296,7 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
         } else if (testId === 'swipe-btn-add-before') {
             setExpanded('before'); resetSubs()
         } else if (testId === 'swipe-btn-configure') {
-            setExpanded('config')
+            setExpanded('config'); setReviewStep(-1)
         }
 
         else if (testId === 'ext-after-job') {
@@ -290,6 +317,14 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
 
         else if (testId === 'ext-cfg-attach') {
             setAttachExpanded(true)
+        }
+        else if (testId === 'ext-cfg-review') {
+            setReviewStep(0)
+        }
+        else if (testId.startsWith('ext-cfg-review-')) {
+            const stepKey = testId.replace('ext-cfg-review-', '')
+            const idx = REVIEW_FLOW_STEPS.findIndex(s => s.key === stepKey)
+            if (idx >= 0) setReviewStep(Math.min(idx + 1, REVIEW_FLOW_STEPS.length - 1))
         }
     }, [resetSubs])
 
@@ -333,7 +368,7 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
         else if (e.key === 'Escape') { e.preventDefault(); setRenaming(false) }
     }, [handleRenameConfirm])
 
-    const BTN_SIZE = 48
+    const BTN_SIZE = 56
     const positions = useMemo(() => {
         if (!nodeRect) return null
         const cx = nodeRect.left + nodeRect.width / 2
@@ -354,15 +389,441 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
         }
     }, [nodeRect, noOverlap])
 
-    if (!nodeRect || !positions) return null
-
     const show = (d: BdxSwipeMenuDirection) => dirs.includes(d)
+
+    const cfgActions = preset === 'long' ? CONFIG_ACTIONS_LONG : CONFIG_ACTIONS
+    const cfgOffset = Math.floor(cfgActions.length / 2)
+    const reviewIndex = useMemo(() => cfgActions.findIndex(a => a.key === 'review'), [cfgActions])
+
+    const activeChainIds = useMemo(() => {
+        if (!expanded) return []
+        if (expanded === 'after') {
+            const ids = ['swipe-btn-add-after']
+            if (jobExpanded === 'after') {
+                ids.push('ext-after-job')
+                if (scriptExpanded === 'after') ids.push('ext-after-job-script')
+                if (aiExpanded === 'after') ids.push('ext-after-job-ai')
+            }
+            return ids
+        }
+        if (expanded === 'before') {
+            const ids = ['swipe-btn-add-before']
+            if (jobExpanded === 'before') {
+                ids.push('ext-before-job')
+                if (scriptExpanded === 'before') ids.push('ext-before-job-script')
+                if (aiExpanded === 'before') ids.push('ext-before-job-ai')
+            }
+            return ids
+        }
+        // config
+        const ids = ['swipe-btn-configure']
+        if (attachExpanded) ids.push('ext-cfg-attach')
+        if (preset === 'long' && reviewStep >= 0) {
+            ids.push('ext-cfg-review')
+            for (let i = 0; i <= Math.min(reviewStep, REVIEW_FLOW_STEPS.length - 1); i++) {
+                ids.push(`ext-cfg-review-${REVIEW_FLOW_STEPS[i].key}`)
+            }
+        }
+        return ids
+    }, [expanded, jobExpanded, scriptExpanded, aiExpanded, attachExpanded, preset, reviewStep])
+
+    const shouldDim = useCallback((testId: string) => {
+        if (!expanded) return false
+
+        // dim top-level siblings
+        if (testId === 'swipe-btn-configure') return expanded !== 'config'
+        if (testId === 'swipe-btn-add-after') return expanded !== 'after'
+        if (testId === 'swipe-btn-add-before') return expanded !== 'before'
+
+        // after branch
+        if (expanded === 'after') {
+            if (testId.startsWith('ext-after-')) {
+                if (!jobExpanded) return false
+                // first-level: keep job, dim siblings
+                if (testId === 'ext-after-subflow' || testId === 'ext-after-recent') return true
+                if (testId === 'ext-after-job') return false
+            }
+            if (testId.startsWith('ext-after-job-')) {
+                if (!jobExpanded) return false
+                if (!scriptExpanded && !aiExpanded) return false
+                // keep selected category, dim siblings
+                if (scriptExpanded === 'after') return testId !== 'ext-after-job-script'
+                if (aiExpanded === 'after') return testId !== 'ext-after-job-ai'
+            }
+            return false
+        }
+
+        // before branch
+        if (expanded === 'before') {
+            if (testId.startsWith('ext-before-')) {
+                if (!jobExpanded) return false
+                if (testId === 'ext-before-subflow' || testId === 'ext-before-recent') return true
+                if (testId === 'ext-before-job') return false
+            }
+            if (testId.startsWith('ext-before-job-')) {
+                if (!jobExpanded) return false
+                if (!scriptExpanded && !aiExpanded) return false
+                if (scriptExpanded === 'before') return testId !== 'ext-before-job-script'
+                if (aiExpanded === 'before') return testId !== 'ext-before-job-ai'
+            }
+            return false
+        }
+
+        // config branch
+        if (expanded === 'config') {
+            if (testId.startsWith('ext-cfg-')) {
+                if (attachExpanded) {
+                    if (testId === 'ext-cfg-attach') return false
+                    if (testId.startsWith('ext-cfg-attach-')) return false
+                    return true
+                }
+                if (preset === 'long' && reviewStep >= 0) {
+                    if (testId === 'ext-cfg-review') return false
+                    if (testId.startsWith('ext-cfg-review-')) return false
+                    return true
+                }
+                return false
+            }
+            return false
+        }
+
+        return false
+    }, [expanded, jobExpanded, scriptExpanded, aiExpanded, attachExpanded, preset, reviewStep])
+
+    const linkLineColor = expanded === 'config' ? 'rgba(245,158,11,0.8)'
+        : expanded === 'after' || expanded === 'before' ? 'rgba(139,92,246,0.85)'
+            : 'rgba(148,163,184,0.7)'
 
     const stopEvents = {
         onClick: (e: React.MouseEvent) => e.stopPropagation(),
         onMouseDown: (e: React.MouseEvent) => e.stopPropagation(),
         onPointerDown: (e: React.PointerEvent) => e.stopPropagation(),
     }
+
+    const visibleButtons = useMemo(() => {
+        type Btn = {
+            key: string
+            testId: string
+            pos: { x: number; y: number }
+            icon: typeof Plus
+            label: string
+            color: string
+            delay?: number
+            active?: boolean
+            onClick: () => void
+            onHover?: () => void
+        }
+
+        const out: Btn[] = []
+        const add = (b: Btn) => out.push(b)
+
+        if (!positions) return out
+
+        if (show('top')) {
+            add({
+                key: 'config',
+                testId: 'swipe-btn-configure',
+                pos: positions.top,
+                icon: Settings,
+                label: 'Config',
+                color: '#f59e0b',
+                delay: 0,
+                active: expanded === 'config',
+                onClick: () => setExpanded(prev => prev === 'config' ? null : 'config'),
+                onHover: () => { setExpanded('config'); setReviewStep(-1) },
+            })
+        }
+
+        if (show('right')) {
+            add({
+                key: 'after',
+                testId: 'swipe-btn-add-after',
+                pos: positions.right,
+                icon: Plus,
+                label: 'After',
+                color: '#8b5cf6',
+                delay: 0.04,
+                active: expanded === 'after',
+                onClick: () => { setExpanded(prev => prev === 'after' ? null : 'after'); resetSubs() },
+                onHover: () => { setExpanded('after'); resetSubs() },
+            })
+        }
+
+        if (show('left')) {
+            add({
+                key: 'before',
+                testId: 'swipe-btn-add-before',
+                pos: positions.left,
+                icon: Plus,
+                label: 'Before',
+                color: '#8b5cf6',
+                delay: 0.12,
+                active: expanded === 'before',
+                onClick: () => { setExpanded(prev => prev === 'before' ? null : 'before'); resetSubs() },
+                onHover: () => { setExpanded('before'); resetSubs() },
+            })
+        }
+
+        if (show('top') && expanded === 'config') {
+            cfgActions.forEach((sub, i) => {
+                const btnPos = { x: positions.top.x + (i - cfgOffset) * TILE, y: positions.top.y - TILE }
+                add({
+                    key: `cfg-${sub.key}`,
+                    testId: `ext-cfg-${sub.key}`,
+                    pos: btnPos,
+                    icon: sub.icon,
+                    label: sub.label,
+                    color: sub.color,
+                    delay: i * 0.03,
+                    active: (sub.key === 'attach' && attachExpanded) || (sub.key === 'review' && reviewStep >= 0),
+                    onClick: () => {
+                        if (sub.key === 'attach') {
+                            setAttachExpanded(prev => !prev); setReviewStep(-1)
+                        } else if (sub.key === 'review') {
+                            setReviewStep(prev => prev >= 0 ? -1 : 0); setAttachExpanded(false)
+                        } else if (sub.key === 'rename') {
+                            setRenaming(true); setAttachExpanded(false); setReviewStep(-1)
+                        } else {
+                            onConfigure(nodeId, sub.key)
+                            setExpanded(null); resetSubs()
+                        }
+                    },
+                    onHover: () => {
+                        if (sub.key === 'attach') { setAttachExpanded(true); setReviewStep(-1) }
+                        else if (sub.key === 'review') { if (preset === 'long') { setReviewStep(0); setAttachExpanded(false) } }
+                        else { setAttachExpanded(false); setReviewStep(-1) }
+                    },
+                })
+            })
+        }
+
+        if (show('top') && expanded === 'config' && attachExpanded) {
+            const attachBtnX = positions.top.x + (cfgActions.findIndex(a => a.key === 'attach') - cfgOffset) * TILE
+            const attachBtnY = positions.top.y - TILE
+            ATTACH_TYPES.forEach((at, i) => {
+                add({
+                    key: `cfg-attach-${at.key}`,
+                    testId: `ext-cfg-attach-${at.key}`,
+                    pos: { x: attachBtnX + (i === 0 ? -TILE : TILE), y: attachBtnY - TILE },
+                    icon: at.icon,
+                    label: at.label,
+                    color: at.color,
+                    delay: i * 0.03,
+                    onClick: () => { onConfigure(nodeId, `attach:${at.key}`); setExpanded(null); resetSubs() },
+                })
+            })
+        }
+
+        if (show('top') && expanded === 'config' && preset === 'long' && reviewIndex >= 0 && reviewStep >= 0) {
+            const reviewBtnX = positions.top.x + (reviewIndex - cfgOffset) * TILE
+            const reviewBtnY = positions.top.y - TILE
+            for (let i = 0; i <= Math.min(reviewStep, REVIEW_FLOW_STEPS.length - 1); i++) {
+                const step = REVIEW_FLOW_STEPS[i]
+                add({
+                    key: `cfg-review-${step.key}`,
+                    testId: `ext-cfg-review-${step.key}`,
+                    pos: { x: reviewBtnX + (i + 1) * TILE, y: reviewBtnY },
+                    icon: step.icon,
+                    label: step.label,
+                    color: step.color,
+                    delay: i * 0.03,
+                    onClick: () => { onConfigure(nodeId, `review:${step.key}`); setExpanded(null); resetSubs() },
+                    onHover: () => setReviewStep(Math.min(i + 1, REVIEW_FLOW_STEPS.length - 1)),
+                })
+            }
+        }
+
+        if (show('right') && expanded === 'after') {
+            ADD_NODE_TYPES.forEach((sub, i) => {
+                add({
+                    key: `after-${sub.key}`,
+                    testId: `ext-after-${sub.key}`,
+                    pos: { x: positions.right.x + TILE, y: positions.right.y + (i - 1) * TILE },
+                    icon: sub.icon,
+                    label: sub.label,
+                    color: sub.color,
+                    delay: i * 0.03,
+                    active: sub.key === 'job' && jobExpanded === 'after',
+                    onClick: () => { onAddAfter(nodeId, sub.key); setExpanded(null); resetSubs() },
+                    onHover: sub.key === 'job'
+                        ? () => { setJobExpanded('after'); setScriptExpanded(null); setAiExpanded(null) }
+                        : () => { setJobExpanded(null); setScriptExpanded(null); setAiExpanded(null) },
+                })
+            })
+        }
+
+        if (show('right') && expanded === 'after' && jobExpanded === 'after') {
+            const jobBtnX = positions.right.x + TILE
+            const jobBtnY = positions.right.y
+            JOB_TYPES.forEach((jt, i) => {
+                add({
+                    key: `after-job-${jt.key}`,
+                    testId: `ext-after-job-${jt.key}`,
+                    pos: { x: jobBtnX + TILE, y: jobBtnY + (i - 1) * TILE },
+                    icon: jt.icon,
+                    label: jt.label,
+                    color: jt.color,
+                    delay: i * 0.03,
+                    active: (jt.key === 'script' && scriptExpanded === 'after') || (jt.key === 'ai' && aiExpanded === 'after'),
+                    onClick: () => {
+                        if (jt.key === 'user') {
+                            onAddAfter(nodeId, 'user')
+                            setExpanded(null); resetSubs()
+                        } else if (jt.key === 'script') {
+                            onAddAfter(nodeId, 'script:js')
+                            setExpanded(null); resetSubs()
+                        } else if (jt.key === 'ai') {
+                            onAddAfter(nodeId, 'ai:worker')
+                            setExpanded(null); resetSubs()
+                        }
+                    },
+                    onHover: jt.key === 'script'
+                        ? () => { setScriptExpanded('after'); setAiExpanded(null) }
+                        : jt.key === 'ai'
+                            ? () => { setAiExpanded('after'); setScriptExpanded(null) }
+                            : () => { setScriptExpanded(null); setAiExpanded(null) },
+                })
+            })
+        }
+
+        if (show('right') && expanded === 'after' && jobExpanded === 'after' && scriptExpanded === 'after') {
+            const scriptBtnX = positions.right.x + TILE * 2
+            const scriptBtnY = positions.right.y - TILE
+            SCRIPT_TYPES.forEach((st, i) => {
+                add({
+                    key: `after-script-${st.key}`,
+                    testId: `ext-after-script-${st.key}`,
+                    pos: { x: scriptBtnX + TILE, y: scriptBtnY + (i - 1) * TILE },
+                    icon: st.icon,
+                    label: st.label,
+                    color: st.color,
+                    delay: i * 0.03,
+                    onClick: () => { onAddAfter(nodeId, `script:${st.key}`); setExpanded(null); resetSubs() },
+                })
+            })
+        }
+
+        if (show('right') && expanded === 'after' && jobExpanded === 'after' && aiExpanded === 'after') {
+            const aiBtnX = positions.right.x + TILE * 2
+            const aiBtnY = positions.right.y + TILE
+            AI_ROLES.forEach((role, i) => {
+                add({
+                    key: `after-ai-${role.key}`,
+                    testId: `ext-after-ai-${role.key}`,
+                    pos: { x: aiBtnX + TILE, y: aiBtnY + (i - 1) * TILE },
+                    icon: role.icon,
+                    label: role.label,
+                    color: role.color,
+                    delay: i * 0.03,
+                    onClick: () => { onAddAfter(nodeId, `ai:${role.key}`); setExpanded(null); resetSubs() },
+                })
+            })
+        }
+
+        if (show('left') && expanded === 'before') {
+            ADD_NODE_TYPES.forEach((sub, i) => {
+                add({
+                    key: `before-${sub.key}`,
+                    testId: `ext-before-${sub.key}`,
+                    pos: { x: positions.left.x - TILE, y: positions.left.y + (i - 1) * TILE },
+                    icon: sub.icon,
+                    label: sub.label,
+                    color: sub.color,
+                    delay: i * 0.03,
+                    active: sub.key === 'job' && jobExpanded === 'before',
+                    onClick: () => { onAddBefore(nodeId, sub.key); setExpanded(null); resetSubs() },
+                    onHover: sub.key === 'job'
+                        ? () => { setJobExpanded('before'); setScriptExpanded(null); setAiExpanded(null) }
+                        : () => { setJobExpanded(null); setScriptExpanded(null); setAiExpanded(null) },
+                })
+            })
+        }
+
+        if (show('left') && expanded === 'before' && jobExpanded === 'before') {
+            const jobBtnX = positions.left.x - TILE
+            const jobBtnY = positions.left.y
+            JOB_TYPES.forEach((jt, i) => {
+                add({
+                    key: `before-job-${jt.key}`,
+                    testId: `ext-before-job-${jt.key}`,
+                    pos: { x: jobBtnX - TILE, y: jobBtnY + (i - 1) * TILE },
+                    icon: jt.icon,
+                    label: jt.label,
+                    color: jt.color,
+                    delay: i * 0.03,
+                    active: (jt.key === 'script' && scriptExpanded === 'before') || (jt.key === 'ai' && aiExpanded === 'before'),
+                    onClick: () => {
+                        if (jt.key === 'user') {
+                            onAddBefore(nodeId, 'user')
+                            setExpanded(null); resetSubs()
+                        } else if (jt.key === 'script') {
+                            onAddBefore(nodeId, 'script:js')
+                            setExpanded(null); resetSubs()
+                        } else if (jt.key === 'ai') {
+                            onAddBefore(nodeId, 'ai:worker')
+                            setExpanded(null); resetSubs()
+                        }
+                    },
+                    onHover: jt.key === 'script'
+                        ? () => { setScriptExpanded('before'); setAiExpanded(null) }
+                        : jt.key === 'ai'
+                            ? () => { setAiExpanded('before'); setScriptExpanded(null) }
+                            : () => { setScriptExpanded(null); setAiExpanded(null) },
+                })
+            })
+        }
+
+        if (show('left') && expanded === 'before' && jobExpanded === 'before' && scriptExpanded === 'before') {
+            const scriptBtnX = positions.left.x - TILE * 2
+            const scriptBtnY = positions.left.y - TILE
+            SCRIPT_TYPES.forEach((st, i) => {
+                add({
+                    key: `before-script-${st.key}`,
+                    testId: `ext-before-script-${st.key}`,
+                    pos: { x: scriptBtnX - TILE, y: scriptBtnY + (i - 1) * TILE },
+                    icon: st.icon,
+                    label: st.label,
+                    color: st.color,
+                    delay: i * 0.03,
+                    onClick: () => { onAddBefore(nodeId, `script:${st.key}`); setExpanded(null); resetSubs() },
+                })
+            })
+        }
+
+        if (show('left') && expanded === 'before' && jobExpanded === 'before' && aiExpanded === 'before') {
+            const aiBtnX = positions.left.x - TILE * 2
+            const aiBtnY = positions.left.y + TILE
+            AI_ROLES.forEach((role, i) => {
+                add({
+                    key: `before-ai-${role.key}`,
+                    testId: `ext-before-ai-${role.key}`,
+                    pos: { x: aiBtnX - TILE, y: aiBtnY + (i - 1) * TILE },
+                    icon: role.icon,
+                    label: role.label,
+                    color: role.color,
+                    delay: i * 0.03,
+                    onClick: () => { onAddBefore(nodeId, `ai:${role.key}`); setExpanded(null); resetSubs() },
+                })
+            })
+        }
+
+        return out
+    }, [show, positions, expanded, resetSubs, attachExpanded, preset, cfgActions, cfgOffset, reviewIndex, reviewStep, nodeId, onConfigure, onAddAfter, onAddBefore, jobExpanded, scriptExpanded, aiExpanded])
+
+    const coordsByTestId = useMemo(() => {
+        const map: Record<string, { x: number; y: number }> = {}
+        for (const b of visibleButtons) map[b.testId] = b.pos
+        return map
+    }, [visibleButtons])
+
+    const chainPoints = useMemo(() => {
+        const pts = activeChainIds
+            .map(id => coordsByTestId[id])
+            .filter(Boolean) as { x: number; y: number }[]
+        return pts
+    }, [activeChainIds, coordsByTestId])
+
+    if (!nodeRect || !positions) return null
 
     return (
         <div data-testid="swipe-buttons-menu"
@@ -372,273 +833,44 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
                 touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none',
             }}>
 
+            {showActiveChainLinkLine && chainPoints.length >= 2 && (
+                <svg
+                    aria-hidden
+                    style={{ position: 'fixed', inset: 0, pointerEvents: 'none' }}
+                >
+                    <path
+                        d={`M ${chainPoints.map(p => `${p.x} ${p.y}`).join(' L ')}`}
+                        stroke={linkLineColor}
+                        strokeWidth={3}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                        opacity={0.9}
+                    />
+                    {chainPoints.map((p, i) => (
+                        <circle key={i} cx={p.x} cy={p.y} r={4.2} fill={linkLineColor} opacity={i === chainPoints.length - 1 ? 1 : 0.55} />
+                    ))}
+                </svg>
+            )}
+
             <AnimatePresence>
-                {show('top') && <MotionButton
-                    key="config"
-                    testId="swipe-btn-configure"
-                    pos={positions.top}
-                    icon={Settings}
-                    label="Config"
-                    color="#f59e0b"
-                    delay={0}
-                    active={expanded === 'config'}
-                    dimmed={expanded !== null && expanded !== 'config'}
-                    activationMode={activationMode}
-                    onClick={() => setExpanded(prev => prev === 'config' ? null : 'config')}
-                    onHover={() => setExpanded('config')}
-                />}
-
-                {show('top') && expanded === 'config' && CONFIG_ACTIONS.map((sub, i) => (
+                {visibleButtons.map(b => (
                     <MotionButton
-                        key={`cfg-${sub.key}`}
-                        testId={`ext-cfg-${sub.key}`}
-                        pos={{ x: positions.top.x + (i - 1) * TILE, y: positions.top.y - TILE }}
-                        icon={sub.icon}
-                        label={sub.label}
-                        color={sub.color}
-                        delay={i * 0.03}
-                        active={sub.key === 'attach' && attachExpanded}
-                        onClick={() => {
-                            if (sub.key === 'attach') {
-                                setAttachExpanded(prev => !prev)
-                            } else if (sub.key === 'rename') {
-                                setRenaming(true)
-                            } else {
-                                onConfigure(nodeId, sub.key)
-                                setExpanded(null); resetSubs()
-                            }
-                        }}
-                        onHover={
-                            sub.key === 'attach' ? () => setAttachExpanded(true)
-                                : () => setAttachExpanded(false)
-                        }
+                        key={b.key}
+                        testId={b.testId}
+                        pos={b.pos}
+                        icon={b.icon}
+                        label={b.label}
+                        color={b.color}
+                        delay={b.delay}
+                        active={b.active}
+                        dimmed={shouldDim(b.testId)}
+                        activationMode={activationMode}
+                        onClick={b.onClick}
+                        onHover={b.onHover}
+                        size={BTN_SIZE}
                     />
                 ))}
-
-                {show('top') && expanded === 'config' && attachExpanded && (() => {
-                    const attachBtnX = positions.top.x + (0 - 1) * TILE
-                    const attachBtnY = positions.top.y - TILE
-                    return ATTACH_TYPES.map((at, i) => (
-                        <MotionButton
-                            key={`cfg-attach-${at.key}`}
-                            testId={`ext-cfg-attach-${at.key}`}
-                            pos={{ x: attachBtnX + (i === 0 ? -TILE : TILE), y: attachBtnY - TILE }}
-                            icon={at.icon}
-                            label={at.label}
-                            color={at.color}
-                            delay={i * 0.03}
-                            onClick={() => { onConfigure(nodeId, `attach:${at.key}`); setExpanded(null); resetSubs() }}
-                        />
-                    ))
-                })()}
-
-                {show('right') && <MotionButton
-                    key="after"
-                    testId="swipe-btn-add-after"
-                    pos={positions.right}
-                    icon={Plus}
-                    label="After"
-                    color="#8b5cf6"
-                    delay={0.04}
-                    active={expanded === 'after'}
-                    dimmed={expanded !== null && expanded !== 'after'}
-                    activationMode={activationMode}
-                    onClick={() => { setExpanded(prev => prev === 'after' ? null : 'after'); resetSubs() }}
-                    onHover={() => { setExpanded('after'); resetSubs() }}
-                />}
-
-                {show('right') && expanded === 'after' && ADD_NODE_TYPES.map((sub, i) => (
-                    <MotionButton
-                        key={`after-${sub.key}`}
-                        testId={`ext-after-${sub.key}`}
-                        pos={{ x: positions.right.x + TILE, y: positions.right.y + (i - 1) * TILE }}
-                        icon={sub.icon}
-                        label={sub.label}
-                        color={sub.color}
-                        delay={i * 0.03}
-                        active={sub.key === 'job' && jobExpanded === 'after'}
-                        onClick={() => {
-                            onAddAfter(nodeId, sub.key)
-                            setExpanded(null); resetSubs()
-                        }}
-                        onHover={
-                            sub.key === 'job' ? () => { setJobExpanded('after'); setScriptExpanded(null); setAiExpanded(null) }
-                                : () => { setJobExpanded(null); setScriptExpanded(null); setAiExpanded(null) }
-                        }
-                    />
-                ))}
-
-                {show('right') && expanded === 'after' && jobExpanded === 'after' && (() => {
-                    const jobBtnX = positions.right.x + TILE
-                    const jobBtnY = positions.right.y
-                    return JOB_TYPES.map((jt, i) => (
-                        <MotionButton
-                            key={`after-job-${jt.key}`}
-                            testId={`ext-after-job-${jt.key}`}
-                            pos={{ x: jobBtnX + TILE, y: jobBtnY + (i - 1) * TILE }}
-                            icon={jt.icon}
-                            label={jt.label}
-                            color={jt.color}
-                            delay={i * 0.03}
-                            active={(jt.key === 'script' && scriptExpanded === 'after') || (jt.key === 'ai' && aiExpanded === 'after')}
-                            onClick={() => {
-                                if (jt.key === 'user') {
-                                    onAddAfter(nodeId, 'user')
-                                    setExpanded(null); resetSubs()
-                                } else if (jt.key === 'script') {
-                                    onAddAfter(nodeId, 'script:js')
-                                    setExpanded(null); resetSubs()
-                                } else if (jt.key === 'ai') {
-                                    onAddAfter(nodeId, 'ai:worker')
-                                    setExpanded(null); resetSubs()
-                                }
-                            }}
-                            onHover={
-                                jt.key === 'script' ? () => { setScriptExpanded('after'); setAiExpanded(null) }
-                                    : jt.key === 'ai' ? () => { setAiExpanded('after'); setScriptExpanded(null) }
-                                        : () => { setScriptExpanded(null); setAiExpanded(null) }
-                            }
-                        />
-                    ))
-                })()}
-
-                {show('right') && expanded === 'after' && jobExpanded === 'after' && scriptExpanded === 'after' && (() => {
-                    const scriptBtnX = positions.right.x + TILE * 2
-                    const scriptBtnY = positions.right.y - TILE
-                    return SCRIPT_TYPES.map((st, i) => (
-                        <MotionButton
-                            key={`after-script-${st.key}`}
-                            testId={`ext-after-script-${st.key}`}
-                            pos={{ x: scriptBtnX + TILE, y: scriptBtnY + (i - 1) * TILE }}
-                            icon={st.icon}
-                            label={st.label}
-                            color={st.color}
-                            delay={i * 0.03}
-                            onClick={() => { onAddAfter(nodeId, `script:${st.key}`); setExpanded(null); resetSubs() }}
-                        />
-                    ))
-                })()}
-
-                {show('right') && expanded === 'after' && jobExpanded === 'after' && aiExpanded === 'after' && (() => {
-                    const aiBtnX = positions.right.x + TILE * 2
-                    const aiBtnY = positions.right.y + TILE
-                    return AI_ROLES.map((role, i) => (
-                        <MotionButton
-                            key={`after-ai-${role.key}`}
-                            testId={`ext-after-ai-${role.key}`}
-                            pos={{ x: aiBtnX + TILE, y: aiBtnY + (i - 1) * TILE }}
-                            icon={role.icon}
-                            label={role.label}
-                            color={role.color}
-                            delay={i * 0.03}
-                            onClick={() => { onAddAfter(nodeId, `ai:${role.key}`); setExpanded(null); resetSubs() }}
-                        />
-                    ))
-                })()}
-
-                {show('left') && <MotionButton
-                    key="before"
-                    testId="swipe-btn-add-before"
-                    pos={positions.left}
-                    icon={Plus}
-                    label="Before"
-                    color="#8b5cf6"
-                    delay={0.12}
-                    active={expanded === 'before'}
-                    dimmed={expanded !== null && expanded !== 'before'}
-                    activationMode={activationMode}
-                    onClick={() => { setExpanded(prev => prev === 'before' ? null : 'before'); resetSubs() }}
-                    onHover={() => { setExpanded('before'); resetSubs() }}
-                />}
-
-                {show('left') && expanded === 'before' && ADD_NODE_TYPES.map((sub, i) => (
-                    <MotionButton
-                        key={`before-${sub.key}`}
-                        testId={`ext-before-${sub.key}`}
-                        pos={{ x: positions.left.x - TILE, y: positions.left.y + (i - 1) * TILE }}
-                        icon={sub.icon}
-                        label={sub.label}
-                        color={sub.color}
-                        delay={i * 0.03}
-                        active={sub.key === 'job' && jobExpanded === 'before'}
-                        onClick={() => {
-                            onAddBefore(nodeId, sub.key)
-                            setExpanded(null); resetSubs()
-                        }}
-                        onHover={
-                            sub.key === 'job' ? () => { setJobExpanded('before'); setScriptExpanded(null); setAiExpanded(null) }
-                                : () => { setJobExpanded(null); setScriptExpanded(null); setAiExpanded(null) }
-                        }
-                    />
-                ))}
-
-                {show('left') && expanded === 'before' && jobExpanded === 'before' && (() => {
-                    const jobBtnX = positions.left.x - TILE
-                    const jobBtnY = positions.left.y
-                    return JOB_TYPES.map((jt, i) => (
-                        <MotionButton
-                            key={`before-job-${jt.key}`}
-                            testId={`ext-before-job-${jt.key}`}
-                            pos={{ x: jobBtnX - TILE, y: jobBtnY + (i - 1) * TILE }}
-                            icon={jt.icon}
-                            label={jt.label}
-                            color={jt.color}
-                            delay={i * 0.03}
-                            active={(jt.key === 'script' && scriptExpanded === 'before') || (jt.key === 'ai' && aiExpanded === 'before')}
-                            onClick={() => {
-                                if (jt.key === 'user') {
-                                    onAddBefore(nodeId, 'user')
-                                    setExpanded(null); resetSubs()
-                                } else if (jt.key === 'script') {
-                                    onAddBefore(nodeId, 'script:js')
-                                    setExpanded(null); resetSubs()
-                                } else if (jt.key === 'ai') {
-                                    onAddBefore(nodeId, 'ai:worker')
-                                    setExpanded(null); resetSubs()
-                                }
-                            }}
-                            onHover={
-                                jt.key === 'script' ? () => { setScriptExpanded('before'); setAiExpanded(null) }
-                                    : jt.key === 'ai' ? () => { setAiExpanded('before'); setScriptExpanded(null) }
-                                        : () => { setScriptExpanded(null); setAiExpanded(null) }
-                            }
-                        />
-                    ))
-                })()}
-
-                {show('left') && expanded === 'before' && jobExpanded === 'before' && scriptExpanded === 'before' && (() => {
-                    const scriptBtnX = positions.left.x - TILE * 2
-                    const scriptBtnY = positions.left.y - TILE
-                    return SCRIPT_TYPES.map((st, i) => (
-                        <MotionButton
-                            key={`before-script-${st.key}`}
-                            testId={`ext-before-script-${st.key}`}
-                            pos={{ x: scriptBtnX - TILE, y: scriptBtnY + (i - 1) * TILE }}
-                            icon={st.icon}
-                            label={st.label}
-                            color={st.color}
-                            delay={i * 0.03}
-                            onClick={() => { onAddBefore(nodeId, `script:${st.key}`); setExpanded(null); resetSubs() }}
-                        />
-                    ))
-                })()}
-
-                {show('left') && expanded === 'before' && jobExpanded === 'before' && aiExpanded === 'before' && (() => {
-                    const aiBtnX = positions.left.x - TILE * 2
-                    const aiBtnY = positions.left.y + TILE
-                    return AI_ROLES.map((role, i) => (
-                        <MotionButton
-                            key={`before-ai-${role.key}`}
-                            testId={`ext-before-ai-${role.key}`}
-                            pos={{ x: aiBtnX - TILE, y: aiBtnY + (i - 1) * TILE }}
-                            icon={role.icon}
-                            label={role.label}
-                            color={role.color}
-                            delay={i * 0.03}
-                            onClick={() => { onAddBefore(nodeId, `ai:${role.key}`); setExpanded(null); resetSubs() }}
-                        />
-                    ))
-                })()}
             </AnimatePresence>
 
             <AnimatePresence>
@@ -757,7 +989,7 @@ function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size =
         <motion.button
             data-testid={testId}
             initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: dimmed ? 0.35 : 1, scale: dimmed ? 0.85 : 1 }}
+            animate={{ opacity: dimmed ? 0.55 : 1, scale: dimmed ? 0.92 : 1 }}
             exit={{ opacity: 0, scale: 0.5 }}
             transition={{ delay, duration: 0.15, ease: 'easeOut' }}
             onClick={handleClick}
@@ -777,8 +1009,8 @@ function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size =
                 left: pos.x - half,
                 top: pos.y - half,
                 pointerEvents: 'auto',
-                ...btnStyle(color, size),
-                ...(active ? { borderColor: `${color}aa`, boxShadow: `0 4px 20px rgba(0,0,0,0.5), 0 0 16px ${color}44` } : {}),
+                ...btnStyle(color, size, !!dimmed),
+                ...(active ? { borderColor: `${color}aa`, boxShadow: `0 10px 26px rgba(0,0,0,0.55), 0 0 18px ${color}44` } : {}),
             }}
         >
             {holdProgress && (
@@ -808,14 +1040,19 @@ function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size =
                     />
                 </svg>
             )}
-            <Icon size={size <= 40 ? 14 : 18} strokeWidth={2} />
+            <Icon
+                size={dimmed ? (size <= 44 ? 16 : 20) : (size <= 44 ? 18 : 24)}
+                strokeWidth={2}
+                color={dimmed ? '#94a3b8' : color}
+            />
             <span style={{
-                fontSize: size <= 40 ? 6 : 7,
+                fontSize: size <= 44 ? 7 : 8,
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 letterSpacing: 0.3,
                 lineHeight: 1,
-                opacity: 0.85,
+                opacity: dimmed ? 0.85 : 0.9,
+                color: dimmed ? '#94a3b8' : undefined,
             }}>
                 {label}
             </span>
