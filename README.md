@@ -70,6 +70,7 @@ Live pages:
 - Home: https://gatocube.github.io/BdxSwipeMenu/
 - Demo: https://gatocube.github.io/BdxSwipeMenu/demo.html
 - Docs: https://gatocube.github.io/BdxSwipeMenu/docs.html
+- Mobile view: https://gatocube.github.io/BdxSwipeMenu/mobile.html
 - Long chains: https://gatocube.github.io/BdxSwipeMenu/long-chains.html
 
 ## License

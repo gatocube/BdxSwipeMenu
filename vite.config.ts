@@ -30,6 +30,7 @@ export default defineConfig(({ mode }) => {
                     demo: path.resolve(__dirname, 'demo.html'),
                     docs: path.resolve(__dirname, 'docs.html'),
                     longChains: path.resolve(__dirname, 'long-chains.html'),
+                    mobile: path.resolve(__dirname, 'mobile.html'),
                 },
             },
         },

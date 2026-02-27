@@ -90,6 +90,10 @@ const SCRIPT_TYPES: SubButton[] = [
 // Virtual tile grid — all button positions snap to multiples of TILE
 const TILE = 64
 
+function clamp(n: number, min: number, max: number) {
+    return Math.max(min, Math.min(max, n))
+}
+
 // ── Props ───────────────────────────────────────────────────────────────────────
 
 export type BdxSwipeMenuActivation = 'click' | 'hold' | 'swipe'
@@ -283,6 +287,7 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
     const [renameValue, setRenameValue] = useState(currentLabel)
     const inputRef = useRef<HTMLInputElement>(null)
     const [nodeRect, setNodeRect] = useState<DOMRect | null>(null)
+    const [viewport, setViewport] = useState({ w: window.innerWidth, h: window.innerHeight })
 
     const resetSubs = useCallback(() => {
         setJobExpanded(null); setScriptExpanded(null); setAiExpanded(null); setAttachExpanded(false); setReviewStep(-1)
@@ -319,7 +324,7 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
             setAttachExpanded(true)
         }
         else if (testId === 'ext-cfg-review') {
-            setReviewStep(0)
+            setReviewStep(REVIEW_FLOW_STEPS.length - 1)
         }
         else if (testId.startsWith('ext-cfg-review-')) {
             const stepKey = testId.replace('ext-cfg-review-', '')
@@ -349,6 +354,12 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
         const interval = setInterval(update, 50)
         return () => clearInterval(interval)
     }, [nodeId])
+
+    useEffect(() => {
+        const onResize = () => setViewport({ w: window.innerWidth, h: window.innerHeight })
+        window.addEventListener('resize', onResize)
+        return () => window.removeEventListener('resize', onResize)
+    }, [])
 
     useEffect(() => {
         if (renaming) {
@@ -580,7 +591,7 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
                         if (sub.key === 'attach') {
                             setAttachExpanded(prev => !prev); setReviewStep(-1)
                         } else if (sub.key === 'review') {
-                            setReviewStep(prev => prev >= 0 ? -1 : 0); setAttachExpanded(false)
+                            setReviewStep(prev => prev >= 0 ? -1 : (REVIEW_FLOW_STEPS.length - 1)); setAttachExpanded(false)
                         } else if (sub.key === 'rename') {
                             setRenaming(true); setAttachExpanded(false); setReviewStep(-1)
                         } else {
@@ -590,7 +601,7 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
                     },
                     onHover: () => {
                         if (sub.key === 'attach') { setAttachExpanded(true); setReviewStep(-1) }
-                        else if (sub.key === 'review') { if (preset === 'long') { setReviewStep(0); setAttachExpanded(false) } }
+                        else if (sub.key === 'review') { if (preset === 'long') { setReviewStep(REVIEW_FLOW_STEPS.length - 1); setAttachExpanded(false) } }
                         else { setAttachExpanded(false); setReviewStep(-1) }
                     },
                 })
@@ -807,8 +818,46 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
             })
         }
 
-        return out
-    }, [show, positions, expanded, resetSubs, attachExpanded, preset, cfgActions, cfgOffset, reviewIndex, reviewStep, nodeId, onConfigure, onAddAfter, onAddBefore, jobExpanded, scriptExpanded, aiExpanded])
+        const margin = 2
+        const half = BTN_SIZE / 2
+
+        // Step 1: shift the whole cluster if any button would render outside viewport.
+        // Step 2: clamp each button as a final safety net (when the cluster is wider
+        //         than the viewport, shifting alone cannot fully fix it).
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+        for (const b of out) {
+            minX = Math.min(minX, b.pos.x - half)
+            minY = Math.min(minY, b.pos.y - half)
+            maxX = Math.max(maxX, b.pos.x + half)
+            maxY = Math.max(maxY, b.pos.y + half)
+        }
+
+        if (!Number.isFinite(minX)) return out
+
+        let dx = 0
+        let dy = 0
+        if (minX < margin) dx += (margin - minX)
+        if (maxX > viewport.w - margin) dx -= (maxX - (viewport.w - margin))
+        if (minY < margin) dy += (margin - minY)
+        if (maxY > viewport.h - margin) dy -= (maxY - (viewport.h - margin))
+
+        const minCx = margin + half
+        const maxCx = Math.max(minCx, viewport.w - margin - half)
+        const minCy = margin + half
+        const maxCy = Math.max(minCy, viewport.h - margin - half)
+
+        const shifted = (dx !== 0 || dy !== 0)
+            ? out.map(b => ({ ...b, pos: { x: b.pos.x + dx, y: b.pos.y + dy } }))
+            : out
+
+        return shifted.map(b => ({
+            ...b,
+            pos: {
+                x: clamp(b.pos.x, minCx, maxCx),
+                y: clamp(b.pos.y, minCy, maxCy),
+            },
+        }))
+    }, [show, positions, expanded, resetSubs, attachExpanded, preset, cfgActions, cfgOffset, reviewIndex, reviewStep, nodeId, onConfigure, onAddAfter, onAddBefore, jobExpanded, scriptExpanded, aiExpanded, viewport.w, viewport.h])
 
     const coordsByTestId = useMemo(() => {
         const map: Record<string, { x: number; y: number }> = {}
