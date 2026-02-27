@@ -70,6 +70,14 @@ export function HomePage() {
                         <div style={pillStyle}>Open docs →</div>
                     </a>
 
+                    <a href="./mobile.html" style={cardStyle('#22c55e')}>
+                        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.4 }}>Mobile view</div>
+                        <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 6 }}>
+                            Phone layout + edge/corner anchoring (menu stays in viewport).
+                        </div>
+                        <div style={pillStyle}>Open demo →</div>
+                    </a>
+
                     <a href="./long-chains.html" style={cardStyle('#a78bfa')}>
                         <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.4 }}>Long chains</div>
                         <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 6 }}>
