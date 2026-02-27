@@ -6,7 +6,7 @@ test.describe('Mobile view demo: menu stays in viewport', () => {
     test.use({ viewport: { width: 390, height: 844 } })
 
     async function openMobile(page: Page) {
-        await page.goto('mobile.html')
+        await page.goto('mobile')
         await expect(page.locator('text=Mobile view — menu positioning')).toBeVisible({ timeout: 10_000 })
     }
 

@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import Link from 'next/link'
+import { TopNav } from '../components/TopNav'
 
 export function DocsPage() {
     const [copied, setCopied] = useState(false)
@@ -29,15 +31,11 @@ export function DocsPage() {
             color: '#e2e8f0',
             fontFamily: 'Inter',
             padding: 24,
+            paddingTop: 56 + 24,
         }}>
+            <TopNav />
             <div style={{ width: 'min(1020px, 100%)', margin: '0 auto' }}>
-                <nav style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 18 }}>
-                    <a href="./index.html" style={navLinkStyle}>Home</a>
-                    <a href="./demo.html" style={navLinkStyle}>Demo</a>
-                    <a href="./long-chains.html" style={navLinkStyle}>Long chains</a>
-                    <div style={{ flex: 1 }} />
-                    <a href="https://github.com/gatocube/BdxSwipeMenu" style={navLinkStyle}>GitHub</a>
-                </nav>
+
 
                 <div style={{
                     borderRadius: 18,
@@ -62,10 +60,10 @@ export function DocsPage() {
                     }}>
                         <a href={stackblitz} style={actionBtn('#8b5cf6')}>Open in StackBlitz</a>
                         <a href={codesandbox} style={actionBtn('#06b6d4')}>Open in CodeSandbox</a>
-                        <a href="./demo.html" style={actionBtn('#f59e0b')}>Open Demo Page</a>
+                        <Link href="/demo" style={actionBtn('#f59e0b')}>Open Demo Page</Link>
                         <a href={stackblitzLong} style={actionBtn('#a78bfa')}>Long chain on StackBlitz</a>
                         <a href={codesandboxLong} style={actionBtn('#22d3ee')}>Long chain on CodeSandbox</a>
-                        <a href="./long-chains.html" style={actionBtn('#22c55e')}>Open Long Chains Page</a>
+                        <Link href="/long-chains" style={actionBtn('#22c55e')}>Open Long Chains Page</Link>
                     </div>
 
                     <section style={{ marginTop: 8 }}>
@@ -168,17 +166,7 @@ export function DocsPage() {
     )
 }
 
-const navLinkStyle: React.CSSProperties = {
-    fontSize: 12,
-    fontWeight: 800,
-    letterSpacing: 0.2,
-    color: '#e2e8f0',
-    textDecoration: 'none',
-    borderRadius: 999,
-    padding: '8px 12px',
-    border: '1px solid rgba(255,255,255,0.10)',
-    background: 'rgba(255,255,255,0.03)',
-}
+
 
 function actionBtn(color: string): React.CSSProperties {
     return {

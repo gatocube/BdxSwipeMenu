@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BdxSwipeMenu, type BdxSwipeMenuActivation } from '../BdxSwipeMenu'
+import { TopNav } from '../components/TopNav'
 
 const MODES: { key: BdxSwipeMenuActivation; label: string; desc: string }[] = [
     { key: 'click', label: 'Click', desc: 'Tap / click to open' },
@@ -283,10 +284,12 @@ export function MobileViewPage() {
                 display: 'grid',
                 placeItems: 'center',
                 padding: 18,
+                paddingTop: 56 + 18,
                 gap: 16,
             }}
             onClick={() => setOpen(false)}
         >
+            <TopNav />
             <div style={{ width: 'min(1100px, 100%)' }}>
                 <div style={{
                     display: 'flex',

@@ -11,6 +11,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { BdxSwipeMenu, type BdxSwipeMenuActivation } from '../BdxSwipeMenu'
+import { TopNav } from '../components/TopNav'
 
 // ── Activation mode pill selector ───────────────────────────────────────────────
 
@@ -23,8 +24,8 @@ const MODES: { key: BdxSwipeMenuActivation; label: string; desc: string }[] = [
 function ModeSelector({ mode, onChange }: { mode: BdxSwipeMenuActivation; onChange: (m: BdxSwipeMenuActivation) => void }) {
     return (
         <div style={{
-            position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)',
-            display: 'flex', gap: 6, zIndex: 10,
+            position: 'absolute', top: 72, left: '50%', transform: 'translateX(-50%)',
+            display: 'flex', gap: 6, zIndex: 60,
             background: 'rgba(10,10,20,0.85)',
             border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: 12,
@@ -297,13 +298,16 @@ export function ButtonsMenuPage() {
         <div
             style={{
                 position: 'relative',
-                width: '100%', height: '100%',
+                width: '100%', minHeight: '100vh',
                 background: '#0a0a14',
                 fontFamily: 'Inter',
                 overflow: 'hidden',
             }}
             onClick={() => setSelectedId(null)}
         >
+            {/* ── Top navigation ── */}
+            <TopNav />
+
             {/* ── Mode selector (top-center) ── */}
             <ModeSelector mode={mode} onChange={setMode} />
 

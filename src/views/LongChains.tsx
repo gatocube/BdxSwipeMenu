@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { BdxSwipeMenu, type BdxSwipeMenuActivation } from '../BdxSwipeMenu'
+import { TopNav } from '../components/TopNav'
 
 const MODES: { key: BdxSwipeMenuActivation; label: string; desc: string }[] = [
     { key: 'click', label: 'Click', desc: 'Tap / click to open' },
@@ -10,7 +11,7 @@ const MODES: { key: BdxSwipeMenuActivation; label: string; desc: string }[] = [
 function ModeSelector({ mode, onChange }: { mode: BdxSwipeMenuActivation; onChange: (m: BdxSwipeMenuActivation) => void }) {
     return (
         <div style={{
-            position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)',
+            position: 'absolute', top: 72, left: '50%', transform: 'translateX(-50%)',
             display: 'flex', gap: 6, zIndex: 10,
             background: 'rgba(10,10,20,0.85)',
             border: '1px solid rgba(255,255,255,0.08)',
@@ -158,6 +159,7 @@ export function LongChainsPage() {
             }}
             onClick={() => setSelected(false)}
         >
+            <TopNav />
             <ModeSelector mode={mode} onChange={setMode} />
             <EventLog log={log} />
 
