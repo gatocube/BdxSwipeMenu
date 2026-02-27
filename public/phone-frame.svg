@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="740" viewBox="0 0 360 740" fill="none">
+  <defs>
+    <linearGradient id="frame" x1="0" y1="0" x2="0" y2="740" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="360" y2="740" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B5CF6" stop-opacity="0.10"/>
+      <stop offset="0.5" stop-color="#06B6D4" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer frame -->
+  <rect x="3.5" y="3.5" width="353" height="733" rx="48" fill="url(#frame)" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="1"/>
+
+  <!-- Inner bezel -->
+  <rect x="12" y="12" width="336" height="716" rx="42" fill="#000000" fill-opacity="0.55" stroke="#FFFFFF" stroke-opacity="0.10" stroke-width="1"/>
+
+  <!-- Notch / speaker pill -->
+  <rect x="111" y="18" width="138" height="22" rx="999" fill="#000000" fill-opacity="0.65" stroke="#FFFFFF" stroke-opacity="0.10" stroke-width="1"/>
+
+  <!-- Glass highlight -->
+  <path d="M36 64 C36 30, 70 12, 104 12 L256 12 C290 12, 324 30, 324 64 L324 680 C324 714, 290 728, 256 728 L104 728 C70 728, 36 714, 36 680 Z"
+        fill="url(#glass)" opacity="0.8"/>
+</svg>
+

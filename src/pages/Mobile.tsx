@@ -122,6 +122,19 @@ function PhoneFrame({ children }: { children: React.ReactNode }) {
             padding: 12,
             position: 'relative',
         }}>
+            <img
+                src="./phone-frame.svg"
+                alt=""
+                aria-hidden
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none',
+                    opacity: 0.95,
+                }}
+            />
             <div style={{
                 position: 'absolute',
                 inset: 8,
