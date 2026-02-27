@@ -33,7 +33,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Build
-        run: npm run build
+        run: NEXT_PUBLIC_BASE_PATH=/BdxSwipeMenu npm run build
 
       - name: Run tests
         run: npx playwright test --reporter=json > test-results.json 2>&1 || true
@@ -98,7 +98,7 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npm run build
+        run: NEXT_PUBLIC_BASE_PATH=/BdxSwipeMenu npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -106,7 +106,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: out
 
       - name: Deploy to GitHub Pages
         id: deployment
