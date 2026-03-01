@@ -59,6 +59,16 @@ const SAMPLE_BUTTONS: SampleButton[] = [
 
 function BdxButtonShowcase() {
     const [selectedIdx, setSelectedIdx] = useState<number | null>(null)
+    const [buttons, setButtons] = useState<SampleButton[]>(SAMPLE_BUTTONS)
+
+    const handleEditorChange = (parsed: unknown) => {
+        if (selectedIdx === null) return
+        if (parsed && typeof parsed === 'object') {
+            const next = [...buttons]
+            next[selectedIdx] = parsed as SampleButton
+            setButtons(next)
+        }
+    }
 
     return (
         <div className="flex-1 flex relative">
@@ -72,7 +82,7 @@ function BdxButtonShowcase() {
                 </div>
 
                 <div className="flex flex-wrap gap-5 items-end justify-center">
-                    {SAMPLE_BUTTONS.map((btn, i) => (
+                    {buttons.map((btn, i) => (
                         <button
                             key={i}
                             onClick={() => setSelectedIdx(selectedIdx === i ? null : i)}
@@ -105,10 +115,14 @@ function BdxButtonShowcase() {
                 {/* Header */}
                 <div className="px-4 py-3 border-b border-white/[0.06]">
                     <h3 className="text-xs font-black text-slate-300 tracking-tight uppercase">
-                        {selectedIdx !== null ? `Button: ${SAMPLE_BUTTONS[selectedIdx].label || SAMPLE_BUTTONS[selectedIdx].icon || 'unnamed'}` : 'All Buttons'}
+                        {selectedIdx !== null ? `Button: ${buttons[selectedIdx].label || buttons[selectedIdx].icon || 'unnamed'}` : 'All Buttons'}
                     </h3>
                 </div>
-                <CodeViewer data={selectedIdx !== null ? SAMPLE_BUTTONS[selectedIdx] : SAMPLE_BUTTONS} />
+                <CodeViewer
+                    data={selectedIdx !== null ? buttons[selectedIdx] : buttons}
+                    onChange={selectedIdx !== null ? handleEditorChange : undefined}
+                    readOnly={selectedIdx === null}
+                />
             </div>
         </div>
     )

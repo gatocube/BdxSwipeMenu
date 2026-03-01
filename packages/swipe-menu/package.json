@@ -1,6 +1,6 @@
 {
   "name": "@bdx/swipe-menu",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Radial swipe menu for touchscreen & desktop — React + framer-motion",
   "sideEffects": false,

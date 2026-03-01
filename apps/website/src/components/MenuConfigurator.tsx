@@ -9,6 +9,7 @@ import { BTN_SIZE, resolveColor } from '@/swipeMenu/ui'
 import type { BdxSwipeMenuActivation, BdxSwipeMenuState, MenuNode } from '@bdx/swipe-menu'
 import { IconPicker } from './IconPicker'
 import { CodeViewer } from './CodeViewer'
+import { menuStateSchema } from './editor/menuStateSchema'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -62,7 +63,15 @@ export function MenuConfigurator({ state, onStateChange, className }: MenuConfig
             <div className="flex flex-1 min-h-0">
                 {/* JSON Panel — left */}
                 <div className="w-[260px] border-r border-white/[0.06] flex flex-col shrink-0 min-h-0">
-                    <CodeViewer data={cleanForDisplay(state)} />
+                    <CodeViewer
+                        data={cleanForDisplay(state)}
+                        schema={menuStateSchema}
+                        onChange={(parsed) => {
+                            if (parsed && typeof parsed === 'object' && 'nodes' in (parsed as Record<string, unknown>)) {
+                                onStateChange(parsed as BdxSwipeMenuState)
+                            }
+                        }}
+                    />
                 </div>
 
                 {/* Controls — right */}
