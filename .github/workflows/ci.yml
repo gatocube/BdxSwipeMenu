@@ -42,7 +42,8 @@ jobs:
         run: NEXT_PUBLIC_BASE_PATH=/BdxSwipeMenu pnpm -C apps/website build
 
       - name: Run tests
-        run: pnpm -C apps/website test -- --reporter=json > test-results.json 2>&1 || true
+        working-directory: apps/website
+        run: npx playwright test --reporter=json > ../../test-results.json 2>/dev/null || true
 
       - name: Update test stats
         if: github.ref == 'refs/heads/main'
