@@ -1,6 +1,12 @@
 node_modules
 dist
+dist-tunnel
+.next
+out
 test-results
 playwright-report
 *.tsbuildinfo
 .DS_Store
+.env
+!.env.example
+.cache

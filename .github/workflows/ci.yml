@@ -25,18 +25,24 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
 
       - name: Install dependencies
-        run: npm install
+        run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: pnpm -C apps/website pretest
 
       - name: Build
-        run: npm run build
+        run: NEXT_PUBLIC_BASE_PATH=/BdxSwipeMenu pnpm -C apps/website build
 
       - name: Run tests
-        run: npx playwright test --reporter=json > test-results.json 2>&1 || true
+        run: pnpm -C apps/website test -- --reporter=json > test-results.json 2>&1 || true
 
       - name: Update test stats
         if: github.ref == 'refs/heads/main'
@@ -53,7 +59,7 @@ jobs:
                 stats: results.stats || {},
               },
             };
-            fs.writeFileSync('public/stats/test-results.json', JSON.stringify(stats, null, 2));
+            fs.writeFileSync('apps/website/public/stats/test-results.json', JSON.stringify(stats, null, 2));
           "
 
       - name: Commit test results
@@ -61,7 +67,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/stats/test-results.json
+          git add apps/website/public/stats/test-results.json
           git diff --staged --quiet || git commit -m "ci: update test-results.json [skip ci]"
           git push
 
@@ -90,15 +96,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
 
       - name: Pull latest (includes test results)
         run: git pull origin main
 
       - name: Install dependencies
-        run: npm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: npm run build
+        run: NEXT_PUBLIC_BASE_PATH=/BdxSwipeMenu pnpm -C apps/website build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -106,7 +118,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: apps/website/out
 
       - name: Deploy to GitHub Pages
         id: deployment
