@@ -31,7 +31,7 @@ test.describe('Smoke: all pages load without errors', () => {
         test(`${label} page loads (/${path})`, async ({ page }) => {
             const { errors, cleanup } = collectErrors(page)
 
-            const resp = await page.goto(path || '/', { waitUntil: 'domcontentloaded' })
+            const resp = await page.goto(path || './', { waitUntil: 'domcontentloaded' })
             expect(resp?.status(), `${label} HTTP status`).toBeLessThan(400)
 
             // Wait a moment for any late console errors
