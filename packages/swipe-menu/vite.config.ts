@@ -24,9 +24,7 @@ export default defineConfig({
                 'react',
                 'react-dom',
                 'react/jsx-runtime',
-                // Keep these external so consumers control versions and dependencies.
                 'framer-motion',
-                'lucide-react',
             ],
         },
     },

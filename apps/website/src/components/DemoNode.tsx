@@ -1,15 +1,6 @@
 import { useCallback, useRef } from 'react'
 import { cn } from '@/utils/utils'
 
-/**
- * Styled node for demo pages.
- *
- * Replaces the copy-pasted MockNode component that existed in
- * Demo.tsx, Demo2.tsx, and LongChains.tsx.
- *
- * Preserves the `data-testid="mock-node-{id}"` attribute for
- * backward-compatible E2E tests.
- */
 export function DemoNode({
     id, label, color, icon, selected,
     onSelect, onHover, onHold, onTouchSelect,
@@ -64,23 +55,27 @@ export function DemoNode({
             onTouchStart={() => onTouchSelect?.()}
             className={cn(
                 'absolute w-[120px] h-[60px] rounded-[10px] flex items-center gap-2 px-3 cursor-pointer transition-all duration-150 touch-none select-none',
-                selected
-                    ? 'border-[1.5px]'
-                    : 'bg-[#0f0f1a]/90 border-[1.5px] border-white/10',
+                selected ? 'border-[1.5px]' : 'border-[1.5px]',
                 className,
             )}
             style={{
-                ...(selected && {
-                    background: `${color}20`,
-                    borderColor: `${color}66`,
-                    boxShadow: `0 0 20px ${color}22`,
-                }),
+                ...(selected
+                    ? {
+                        background: `${color}20`,
+                        borderColor: `${color}66`,
+                        boxShadow: `0 0 20px ${color}22`,
+                    }
+                    : {
+                        background: 'var(--bdx-card-bg)',
+                        borderColor: 'var(--bdx-border-strong)',
+                    }
+                ),
             }}
         >
             <span className="text-xl">{icon}</span>
             <div>
-                <div className="text-[11px] font-bold text-slate-200 font-[Inter]">{label}</div>
-                <div className="text-[7px] text-slate-500 font-mono">{id}</div>
+                <div className="text-[11px] font-bold font-[Inter]" style={{ color: 'var(--bdx-text)' }}>{label}</div>
+                <div className="text-[7px] font-mono" style={{ color: 'var(--bdx-text-faint)' }}>{id}</div>
             </div>
         </div>
     )

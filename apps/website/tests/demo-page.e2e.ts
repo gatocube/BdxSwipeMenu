@@ -198,4 +198,224 @@ test.describe('Demo page', () => {
             `"actions" tile borderColor "${actionsTileStyles.borderColor}" should match menu button "${actionsMenuStyles.borderColor}"`
         ).toBe(actionsMenuStyles.borderColor)
     })
+
+    test('JSON editor has no lint error markers on load', async ({ page }) => {
+        await page.goto('demo')
+
+        // Wait for CodeMirror to render
+        const editor = page.locator('.cm-editor')
+        await expect(editor).toBeVisible({ timeout: 10_000 })
+
+        // Give the linter time to run
+        await page.waitForTimeout(1500)
+
+        const errorCount = await page.locator('.cm-lint-marker-error').count()
+        expect(errorCount, 'CodeMirror should have zero lint errors on initial load').toBe(0)
+    })
+
+    test('color picker in JSON editor updates hex value', async ({ page }) => {
+        await page.goto('demo')
+
+        const editor = page.locator('.cm-editor')
+        await expect(editor).toBeVisible({ timeout: 10_000 })
+
+        // Wait for CodeMirror decorations to render (color swatches)
+        const swatch = editor.locator('.cm-color-swatch input[type="color"]').first()
+        await expect(swatch).toBeAttached({ timeout: 10_000 })
+
+        const originalColor = await swatch.inputValue()
+        expect(originalColor).toMatch(/^#[0-9a-fA-F]{6}$/)
+
+        const newColor = '#ff0000'
+        await swatch.evaluate((el, color) => {
+            const input = el as HTMLInputElement
+            input.value = color
+            input.dispatchEvent(new Event('change', { bubbles: true }))
+        }, newColor)
+
+        await page.waitForTimeout(500)
+
+        const editorText = await editor.locator('.cm-content').textContent()
+        expect(editorText).toContain(newColor)
+    })
+
+    test('changing button color via color picker updates the rendered menu button', async ({ page }) => {
+        await page.goto('demo')
+
+        const editor = page.locator('.cm-editor')
+        await expect(editor).toBeVisible({ timeout: 10_000 })
+
+        // Wait for color swatches to render
+        const swatch = editor.locator('.cm-color-swatch input[type="color"]').first()
+        await expect(swatch).toBeAttached({ timeout: 10_000 })
+
+        // First swatch corresponds to "actions" node (color: #7c3aed)
+        const originalColor = await swatch.inputValue()
+        expect(originalColor.toLowerCase()).toBe('#7c3aed')
+
+        // Change color to bright red
+        const newColor = '#ff0000'
+        await swatch.evaluate((el, color) => {
+            const input = el as HTMLInputElement
+            input.value = color
+            input.dispatchEvent(new Event('change', { bubbles: true }))
+        }, newColor)
+
+        // Wait for React state update and re-render
+        await page.waitForTimeout(800)
+
+        // Open the menu to make the "actions" button visible
+        const trigger = page.getByTestId('bdx-trigger')
+        await trigger.hover()
+        await page.waitForTimeout(500)
+
+        const actionsBtn = page.getByTestId('swipe-btn-actions')
+        await expect(actionsBtn).toBeVisible({ timeout: 3_000 })
+
+        // Verify the button's computed CSS color matches the new color
+        const btnColor = await actionsBtn.evaluate(el => getComputedStyle(el).color)
+        expect(
+            btnColor,
+            `"actions" button color should be red (#ff0000 → rgb(255, 0, 0)), got "${btnColor}"`
+        ).toBe('rgb(255, 0, 0)')
+
+        // Also verify the SVG icon inherits the same color
+        const iconColor = await actionsBtn.locator('svg').evaluate(
+            el => getComputedStyle(el).color
+        )
+        expect(
+            iconColor,
+            `SVG icon color should be red, got "${iconColor}"`
+        ).toBe('rgb(255, 0, 0)')
+    })
+
+    test('direction field shows autocomplete with valid options', async ({ page }) => {
+        await page.goto('demo')
+
+        const editor = page.locator('.cm-editor')
+        await expect(editor).toBeVisible({ timeout: 10_000 })
+        await page.waitForTimeout(1000)
+
+        // Access the EditorView via CM6's internal cmTile property chain:
+        // .cm-content DOM -> .cmTile -> .root (DocTile) -> .view (EditorView)
+        const found = await page.evaluate(() => {
+            const content = document.querySelector('.cm-content')
+            if (!content) return false
+            const tile = (content as unknown as { cmTile?: { root?: { view?: { state: { doc: { toString(): string } }; dispatch(spec: unknown): void; focus(): void } } } }).cmTile
+            const view = tile?.root?.view
+            if (!view) return false
+            const doc = view.state.doc.toString()
+            const dirMatch = /"direction":\s*"top"/.exec(doc)
+            if (!dirMatch) return false
+            const valueStart = doc.indexOf('"top"', dirMatch.index)
+            if (valueStart < 0) return false
+            // Select "top" text (inside the quotes)
+            view.dispatch({ selection: { anchor: valueStart + 1, head: valueStart + 4 } })
+            view.focus()
+            return true
+        })
+
+        expect(found, 'Should find and select direction value in editor').toBe(true)
+        await page.waitForTimeout(200)
+
+        // Type to replace selected text and trigger autocomplete
+        await page.keyboard.type('bo')
+        await page.waitForTimeout(300)
+
+        // Trigger autocomplete explicitly
+        await page.keyboard.press('Control+Space')
+        await page.waitForTimeout(500)
+
+        const autocomplete = page.locator('.cm-tooltip-autocomplete')
+        await expect(autocomplete).toBeVisible({ timeout: 3_000 })
+
+        const tooltipText = await autocomplete.textContent()
+        expect(tooltipText).toContain('bottom')
+    })
+
+    test('theme toggle in header switches between glow-night and light themes', async ({ page }) => {
+        await page.goto('demo')
+
+        const trigger = page.getByTestId('bdx-trigger')
+        await expect(trigger).toBeVisible({ timeout: 10_000 })
+
+        const themeToggle = page.getByTestId('theme-toggle')
+        await expect(themeToggle).toBeVisible()
+
+        // ── 1. Default theme is glow-night ──
+        await trigger.hover()
+        await page.waitForTimeout(500)
+        const menu = page.getByTestId('swipe-buttons-menu')
+        await expect(menu).toBeVisible({ timeout: 3_000 })
+        await expect(menu).toHaveAttribute('data-bdx-theme', 'glow-night')
+
+        const actionsBtn = page.getByTestId('swipe-btn-actions')
+        const glowBg = await actionsBtn.evaluate(el => getComputedStyle(el).backgroundColor)
+
+        // Dismiss menu completely
+        await page.mouse.move(10, 10)
+        await expect(menu).not.toBeVisible({ timeout: 3_000 })
+
+        // ── 2. Switch to light ──
+        await themeToggle.click({ force: true })
+        await page.waitForTimeout(500)
+
+        // Open menu again — should be light
+        await trigger.hover()
+        await page.waitForTimeout(500)
+        await expect(menu).toBeVisible({ timeout: 3_000 })
+        await expect(menu).toHaveAttribute('data-bdx-theme', 'light')
+
+        const lightBg = await actionsBtn.evaluate(el => getComputedStyle(el).backgroundColor)
+        expect(lightBg).not.toBe(glowBg)
+
+        // Dismiss menu
+        await page.mouse.move(10, 10)
+        await expect(menu).not.toBeVisible({ timeout: 3_000 })
+
+        // ── 3. Toggle back to glow-night ──
+        await themeToggle.click({ force: true })
+        await page.waitForTimeout(500)
+
+        await trigger.hover()
+        await page.waitForTimeout(500)
+        await expect(menu).toBeVisible({ timeout: 3_000 })
+        await expect(menu).toHaveAttribute('data-bdx-theme', 'glow-night')
+    })
+
+    test('editor does not overflow the page vertically', async ({ page }) => {
+        await page.goto('demo')
+
+        const editor = page.locator('.cm-editor')
+        await expect(editor).toBeVisible({ timeout: 10_000 })
+        await page.waitForTimeout(500)
+
+        const viewportHeight = page.viewportSize()!.height
+
+        // Check the configurator panel (parent of editor) stays within viewport
+        const configurator = page.locator('.cm-editor').locator('..')
+        const box = await configurator.boundingBox()
+        expect(box).toBeTruthy()
+
+        // The editor's scrollable container should not push the page beyond viewport
+        const editorBox = await editor.boundingBox()
+        expect(editorBox).toBeTruthy()
+
+        // The editor should have a bounded height with internal scroll, not push page
+        // The scroller element should have overflow: auto
+        const hasScroll = await page.evaluate(() => {
+            const scroller = document.querySelector('.cm-editor .cm-scroller')
+            if (!scroller) return false
+            const style = getComputedStyle(scroller)
+            return style.overflow === 'auto' || style.overflowY === 'auto'
+        })
+        expect(hasScroll, '.cm-scroller should have overflow: auto for scrolling').toBe(true)
+
+        // The configurator panel should be within the viewport
+        const panelBottom = box!.y + box!.height
+        expect(
+            panelBottom,
+            `Configurator panel bottom (${panelBottom}px) should be within viewport (${viewportHeight}px)`
+        ).toBeLessThanOrEqual(viewportHeight + 20)
+    })
 })

@@ -3,45 +3,31 @@
 import { useState, useMemo } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/utils/utils'
-import { ICON_MAP, AUTO_COLORS } from '@/swipeMenu/ui'
+import { allIcons, ALL_ICON_NAMES, GLOW_NIGHT_THEME, LIGHT_THEME } from '@/swipeMenu/ui'
 import { NodeButton } from './NodeButton'
-import type { LucideIcon } from 'lucide-react'
-
-// ── Types ────────────────────────────────────────────────────────────────────
+import { useTheme } from './ThemeContext'
 
 interface IconPickerProps {
-    /** Current icon name (lucide key) */
     icon?: string
-    /** Resolved hex color */
     color: string
-    /** Label shown below icon */
     label: string
-    /** Called when icon changes */
     onIconChange?: (icon: string) => void
-    /** Called when color changes */
     onColorChange?: (color: string) => void
-    /** Size of the tile */
     size?: number
-    /** Test ID for e2e selection */
     testId?: string
-    /** Whether the tile appears dimmed (disabled) */
     dimmed?: boolean
 }
 
-// ── All available icon names ─────────────────────────────────────────────────
-
-const ICON_NAMES = Object.keys(ICON_MAP)
-
-// ── Component ────────────────────────────────────────────────────────────────
-
 export function IconPicker({ icon, color, label, onIconChange, onColorChange, size = 56, testId, dimmed }: IconPickerProps) {
+    const { theme } = useTheme()
+    const autoColors = (theme === 'light' ? LIGHT_THEME : GLOW_NIGHT_THEME).autoColors
     const [open, setOpen] = useState(false)
     const [search, setSearch] = useState('')
 
     const filteredIcons = useMemo(() => {
-        if (!search) return ICON_NAMES
+        if (!search) return ALL_ICON_NAMES
         const q = search.toLowerCase()
-        return ICON_NAMES.filter(n => n.includes(q))
+        return ALL_ICON_NAMES.filter(n => n.includes(q))
     }, [search])
 
     return (
@@ -55,75 +41,81 @@ export function IconPicker({ icon, color, label, onIconChange, onColorChange, si
                     }}
                     title={`${label} — ${icon || 'no icon'}`}
                 >
-                    <NodeButton
-                        testId={testId}
-                        icon={icon}
-                        label={label}
-                        color={color}
-                        size={size}
-                        dimmed={dimmed}
-                    />
+                    <NodeButton testId={testId} icon={icon} label={label} color={color} size={size} dimmed={dimmed} />
                 </button>
             </PopoverTrigger>
 
             <PopoverContent
-                className="w-[280px] p-0 bg-[#12121e] border-white/[0.12]"
+                className="w-[280px] p-0"
+                style={{ background: 'var(--bdx-surface-solid)', border: '1px solid var(--bdx-border-strong)' }}
                 side="top"
                 align="start"
                 sideOffset={8}
             >
-                {/* Search */}
-                <div className="p-2 border-b border-white/[0.06]">
+                <div className="p-2" style={{ borderBottom: '1px solid var(--bdx-border)' }}>
                     <input
                         type="text"
                         placeholder="Search icons…"
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="w-full h-7 px-2 rounded-md bg-white/[0.05] border border-white/[0.08] text-xs text-slate-300 placeholder:text-slate-600 outline-none focus:border-violet-500/40"
+                        className="w-full h-7 px-2 rounded-md text-xs outline-none focus:border-violet-500/40"
+                        style={{
+                            background: 'var(--bdx-input-bg)',
+                            border: '1px solid var(--bdx-border)',
+                            color: 'var(--bdx-text-secondary)',
+                        }}
                         autoFocus
                     />
                 </div>
 
-                {/* Icon Grid */}
                 {onIconChange && (
-                    <div className="p-2 max-h-[160px] overflow-auto">
+                    <div className="p-2 max-h-[200px] overflow-auto">
                         <div className="grid grid-cols-8 gap-1">
-                            {filteredIcons.map(name => {
-                                const Ic = ICON_MAP[name]
+                            {filteredIcons.slice(0, 200).map(name => {
+                                const Ic = allIcons[name]
+                                if (!Ic) return null
                                 return (
                                     <button
                                         key={name}
                                         onClick={() => { onIconChange(name); setSearch('') }}
                                         className={cn(
-                                            'w-7 h-7 flex items-center justify-center rounded-md cursor-pointer transition-all hover:bg-white/[0.08]',
+                                            'w-7 h-7 flex items-center justify-center rounded-md cursor-pointer transition-all',
                                             icon === name ? 'bg-violet-500/20 border border-violet-500/40' : 'border border-transparent',
                                         )}
+                                        style={icon !== name ? { color: 'var(--bdx-text-muted)' } : undefined}
                                         title={name}
                                     >
-                                        <Ic size={14} strokeWidth={2} color={icon === name ? color : '#94a3b8'} />
+                                        <Ic size={14} strokeWidth={2} color={icon === name ? color : 'currentColor'} />
                                     </button>
                                 )
                             })}
                             {filteredIcons.length === 0 && (
-                                <div className="col-span-8 text-center text-[10px] text-slate-600 py-3">No icons match</div>
+                                <div className="col-span-8 text-center text-[10px] py-3" style={{ color: 'var(--bdx-text-faint)' }}>No icons match</div>
+                            )}
+                            {filteredIcons.length > 200 && (
+                                <div className="col-span-8 text-center text-[10px] py-1" style={{ color: 'var(--bdx-text-faint)' }}>
+                                    {filteredIcons.length - 200} more — type to narrow
+                                </div>
                             )}
                         </div>
                     </div>
                 )}
 
-                {/* Color Palette */}
                 {onColorChange && (
-                    <div className="p-2 border-t border-white/[0.06]">
+                    <div className="p-2" style={{ borderTop: '1px solid var(--bdx-border)' }}>
                         <div className="flex gap-1.5 flex-wrap">
-                            {AUTO_COLORS.map(c => (
+                            {autoColors.map(c => (
                                 <button
                                     key={c}
                                     onClick={() => onColorChange(c)}
                                     className={cn(
                                         'w-6 h-6 rounded-md border-2 transition-all duration-150 cursor-pointer hover:scale-110',
-                                        color === c ? 'border-white/60 scale-110' : 'border-white/[0.08]',
+                                        color === c ? 'scale-110' : '',
                                     )}
-                                    style={{ background: c }}
+                                    style={{
+                                        background: c,
+                                        borderColor: color === c ? 'var(--bdx-text-muted)' : 'var(--bdx-border)',
+                                    }}
                                     title={c}
                                 />
                             ))}

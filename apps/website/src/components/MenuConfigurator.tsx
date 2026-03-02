@@ -5,8 +5,9 @@ import { motion } from 'framer-motion'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/utils/utils'
-import { BTN_SIZE, resolveColor } from '@/swipeMenu/ui'
+import { BTN_SIZE, resolveColor, GLOW_NIGHT_THEME, LIGHT_THEME } from '@/swipeMenu/ui'
 import type { BdxSwipeMenuActivation, BdxSwipeMenuState, MenuNode } from '@bdx/swipe-menu'
+import { useTheme } from './ThemeContext'
 import { IconPicker } from './IconPicker'
 import { CodeViewer } from './CodeViewer'
 import { menuStateSchema } from './editor/menuStateSchema'
@@ -30,6 +31,8 @@ const ACTIVATION_OPTIONS: { value: BdxSwipeMenuActivation; label: string; desc: 
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function MenuConfigurator({ state, onStateChange, className }: MenuConfiguratorProps) {
+    const { theme } = useTheme()
+    const t = theme === 'light' ? LIGHT_THEME : GLOW_NIGHT_THEME
     const [animated, setAnimated] = useState(true)
     const [animKey, setAnimKey] = useState(0)  // bump to re-trigger entrance animation
 
@@ -49,12 +52,12 @@ export function MenuConfigurator({ state, onStateChange, className }: MenuConfig
 
     return (
         <div className={cn(
-            'bg-[#0a0a14]/90 border border-white/[0.08] rounded-2xl backdrop-blur-xl overflow-hidden flex flex-col',
+            'rounded-2xl backdrop-blur-xl overflow-hidden flex flex-col',
             className,
-        )}>
+        )} style={{ background: 'var(--bdx-surface)', border: '1px solid var(--bdx-border)' }}>
             {/* Header */}
-            <div className="px-4 py-3 border-b border-white/[0.06]">
-                <h3 className="text-xs font-black text-slate-300 tracking-tight uppercase">
+            <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--bdx-border)' }}>
+                <h3 className="text-xs font-black tracking-tight uppercase" style={{ color: 'var(--bdx-text-secondary)' }}>
                     Menu Configurator
                 </h3>
             </div>
@@ -62,10 +65,11 @@ export function MenuConfigurator({ state, onStateChange, className }: MenuConfig
             {/* Two-column body: JSON left, Controls right */}
             <div className="flex flex-1 min-h-0">
                 {/* JSON Panel — left */}
-                <div className="w-[260px] border-r border-white/[0.06] flex flex-col shrink-0 min-h-0">
+                <div className="w-[260px] flex flex-col shrink-0 min-h-0" style={{ borderRight: '1px solid var(--bdx-border)' }}>
                     <CodeViewer
                         data={cleanForDisplay(state)}
                         schema={menuStateSchema}
+                        className="flex-1"
                         onChange={(parsed) => {
                             if (parsed && typeof parsed === 'object' && 'nodes' in (parsed as Record<string, unknown>)) {
                                 onStateChange(parsed as BdxSwipeMenuState)
@@ -78,7 +82,7 @@ export function MenuConfigurator({ state, onStateChange, className }: MenuConfig
                 <div className="flex-1 px-4 py-3 space-y-4 overflow-auto">
                     {/* Activation Mode */}
                     <div className="space-y-1.5">
-                        <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                        <Label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--bdx-text-faint)' }}>
                             Activation Mode
                         </Label>
                         <div className="flex gap-1">
@@ -89,9 +93,10 @@ export function MenuConfigurator({ state, onStateChange, className }: MenuConfig
                                     className={cn(
                                         'flex-1 flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg border-[1.5px] cursor-pointer text-[10px] font-bold transition-all duration-150',
                                         state.activation === opt.value
-                                            ? 'border-violet-500/50 bg-violet-500/15 text-violet-300'
-                                            : 'border-white/[0.06] text-slate-500 hover:text-slate-400 hover:border-white/[0.12]',
+                                            ? 'border-violet-500/50 bg-violet-500/15 text-violet-600'
+                                            : '',
                                     )}
+                                    style={state.activation !== opt.value ? { borderColor: 'var(--bdx-border)', color: 'var(--bdx-text-faint)' } : undefined}
                                 >
                                     <span>{opt.label}</span>
                                     <span className="text-[7px] font-normal opacity-60">{opt.desc}</span>
@@ -100,7 +105,7 @@ export function MenuConfigurator({ state, onStateChange, className }: MenuConfig
                         </div>
                     </div>
 
-                    <Separator className="bg-white/[0.06]" />
+                    <Separator style={{ background: 'var(--bdx-border)' }} />
 
                     {/* Toggles */}
                     <div className="space-y-2">
@@ -124,9 +129,9 @@ export function MenuConfigurator({ state, onStateChange, className }: MenuConfig
                     {/* Node Tiles */}
                     {nodes && (
                         <>
-                            <Separator className="bg-white/[0.06]" />
+                            <Separator style={{ background: 'var(--bdx-border)' }} />
                             <div className="space-y-1.5">
-                                <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                <Label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--bdx-text-faint)' }}>
                                     Nodes
                                 </Label>
                                 <div className="flex flex-wrap gap-1.5" key={animKey}>
@@ -140,7 +145,7 @@ export function MenuConfigurator({ state, onStateChange, className }: MenuConfig
                                             <IconPicker
                                                 testId={`node-tile-${node.key}`}
                                                 icon={node.icon}
-                                                color={resolveColor(node, i)}
+                                                color={resolveColor(node, i, t.autoColors)}
                                                 label={node.label}
                                                 size={i === 0 ? BTN_SIZE : 44}
                                                 dimmed={!!node.disabled}
@@ -164,15 +169,14 @@ export function MenuConfigurator({ state, onStateChange, className }: MenuConfig
 function ToggleRow({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
     return (
         <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{label}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--bdx-text-faint)' }}>{label}</span>
             <button
                 onClick={() => onChange(!checked)}
                 className={cn(
                     'w-8 h-[18px] rounded-full transition-all duration-200 relative cursor-pointer',
-                    checked
-                        ? 'bg-violet-500/50'
-                        : 'bg-white/[0.08]',
+                    checked ? 'bg-violet-500/50' : '',
                 )}
+                style={checked ? undefined : { background: 'var(--bdx-border-strong)' }}
             >
                 <div className={cn(
                     'absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white transition-all duration-200',

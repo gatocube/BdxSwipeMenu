@@ -5,12 +5,13 @@ import CodeMirror, { type ReactCodeMirrorRef } from '@uiw/react-codemirror'
 import { json, jsonLanguage, jsonParseLinter } from '@codemirror/lang-json'
 import { yaml as yamlLang } from '@codemirror/lang-yaml'
 import { linter, lintGutter } from '@codemirror/lint'
-import { oneDark } from '@codemirror/theme-one-dark'
 import { EditorView } from '@codemirror/view'
+import { tokyoNight } from '@uiw/codemirror-theme-tokyo-night'
 import { jsonSchema } from 'codemirror-json-schema'
 import jsYaml from 'js-yaml'
 import { cn } from '@/utils/utils'
 import { colorPickerPlugin, colorPickerTheme } from './editor/colorPickerPlugin'
+import { useTheme } from './ThemeContext'
 
 type Format = 'json' | 'yaml'
 
@@ -23,13 +24,25 @@ interface CodeViewerProps {
     readOnly?: boolean
 }
 
-const baseTheme = EditorView.theme({
-    '&': { fontSize: '11px', background: 'transparent' },
+const sharedTheme = EditorView.theme({
+    '&': { fontSize: '11px', height: '100%' },
     '.cm-content': { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', padding: '8px 0' },
     '.cm-gutters': { background: 'transparent', border: 'none' },
-    '.cm-activeLine': { background: 'rgba(255,255,255,0.03)' },
     '.cm-activeLineGutter': { background: 'transparent' },
     '.cm-scroller': { overflow: 'auto' },
+    '.cm-editor': { height: '100%' },
+})
+
+const darkOverrides = EditorView.theme({
+    '&': { background: 'transparent' },
+    '.cm-gutters': { background: 'transparent' },
+})
+
+const lightBaseTheme = EditorView.theme({
+    '&': { background: 'transparent' },
+    '.cm-activeLine': { background: 'rgba(0,0,0,0.04)' },
+    '.cm-cursor': { borderLeftColor: '#334155' },
+    '.cm-selectionBackground': { background: 'rgba(99,102,241,0.15) !important' },
 })
 
 function yamlLinter() {
@@ -65,6 +78,8 @@ function parse(text: string, format: Format): unknown {
 }
 
 export function CodeViewer({ data, onChange, schema, className, height, readOnly }: CodeViewerProps) {
+    const { theme } = useTheme()
+    const isLight = theme === 'light'
     const [format, setFormat] = useState<Format>('json')
     const editorRef = useRef<ReactCodeMirrorRef>(null)
     const isExternalUpdate = useRef(false)
@@ -75,8 +90,13 @@ export function CodeViewer({ data, onChange, schema, className, height, readOnly
     const [value, setValue] = useState(serialized)
 
     useEffect(() => {
-        isExternalUpdate.current = true
-        setValue(serialized)
+        setValue(prev => {
+            if (prev === serialized) {
+                return prev
+            }
+            isExternalUpdate.current = true
+            return serialized
+        })
     }, [serialized])
 
     const handleChange = useCallback((val: string) => {
@@ -105,7 +125,12 @@ export function CodeViewer({ data, onChange, schema, className, height, readOnly
     }, [])
 
     const extensions = useMemo(() => {
-        const exts = [baseTheme, oneDark, lintGutter()]
+        const exts: import('@codemirror/state').Extension[] = [sharedTheme, lintGutter()]
+        if (isLight) {
+            exts.push(lightBaseTheme)
+        } else {
+            exts.push(tokyoNight, darkOverrides)
+        }
         if (format === 'json') {
             exts.push(json())
             exts.push(linter(jsonParseLinter()))
@@ -118,26 +143,25 @@ export function CodeViewer({ data, onChange, schema, className, height, readOnly
             exts.push(yamlLinter())
         }
         return exts
-    }, [format, schema])
+    }, [format, schema, isLight])
 
     return (
         <div className={cn('flex flex-col min-h-0', className)}>
             {/* Header with format toggle */}
-            <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/[0.06]">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">
+            <div className="flex items-center justify-between px-3 py-1.5" style={{ borderBottom: '1px solid var(--bdx-border)' }}>
+                <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--bdx-text-faint)' }}>
                     {format === 'json' ? 'JSON' : 'YAML'}
                 </span>
-                <div className="flex gap-0.5 bg-white/[0.04] rounded-md p-0.5">
+                <div className="flex gap-0.5 rounded-md p-0.5" style={{ background: 'var(--bdx-input-bg)' }}>
                     {(['json', 'yaml'] as Format[]).map(f => (
                         <button
                             key={f}
                             onClick={() => switchFormat(f)}
                             className={cn(
                                 'text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded transition-all duration-150',
-                                format === f
-                                    ? 'text-white bg-violet-500/25 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-300'
+                                format === f ? 'bg-violet-500/25 shadow-sm' : ''
                             )}
+                            style={{ color: format === f ? 'var(--bdx-text)' : 'var(--bdx-text-faint)' }}
                         >
                             {f}
                         </button>
@@ -147,7 +171,7 @@ export function CodeViewer({ data, onChange, schema, className, height, readOnly
 
             {/* CodeMirror editor */}
             <div
-                className="flex-1 min-h-0"
+                className="flex-1 min-h-0 overflow-hidden"
                 style={height ? { height, maxHeight: height } : undefined}
             >
                 <CodeMirror
@@ -166,9 +190,9 @@ export function CodeViewer({ data, onChange, schema, className, height, readOnly
                         autocompletion: true,
                         indentOnInput: true,
                     }}
-                    theme="dark"
-                    height={height ? `${height}px` : '100%'}
-                    style={{ height: '100%', overflow: 'auto' }}
+                    theme={isLight ? 'light' : 'dark'}
+                    height="100%"
+                    style={{ height: '100%' }}
                 />
             </div>
         </div>

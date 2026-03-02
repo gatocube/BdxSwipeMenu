@@ -114,6 +114,49 @@
     --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ── BdxSwipeMenu website theme tokens ───────────────────────────── */
+
+body[data-bdx-theme="glow-night"], body:not([data-bdx-theme]) {
+    --bdx-bg: #070712;
+    --bdx-surface: rgba(10,10,20,0.9);
+    --bdx-surface-solid: #0a0a14;
+    --bdx-border: rgba(255,255,255,0.08);
+    --bdx-border-strong: rgba(255,255,255,0.12);
+    --bdx-text: #e2e8f0;
+    --bdx-text-secondary: #cbd5e1;
+    --bdx-text-muted: #94a3b8;
+    --bdx-text-faint: #64748b;
+    --bdx-nav-bg: rgba(7,7,18,0.85);
+    --bdx-nav-bg-scroll: rgba(7,7,18,0.95);
+    --bdx-card-bg: rgba(15,15,26,0.8);
+    --bdx-hover-bg: rgba(255,255,255,0.06);
+    --bdx-input-bg: rgba(255,255,255,0.05);
+    --bdx-ring-offset: #070712;
+    --bdx-dot-pattern: rgba(255,255,255,0.03);
+    /* Sync shadcn vars so Card/Popover/Select borders match our subtle palette */
+    --border: rgba(255,255,255,0.06);
+    --input: rgba(255,255,255,0.06);
+}
+
+body[data-bdx-theme="light"] {
+    --bdx-bg: #f8fafc;
+    --bdx-surface: rgba(255,255,255,0.95);
+    --bdx-surface-solid: #ffffff;
+    --bdx-border: rgba(0,0,0,0.08);
+    --bdx-border-strong: rgba(0,0,0,0.15);
+    --bdx-text: #1e293b;
+    --bdx-text-secondary: #334155;
+    --bdx-text-muted: #64748b;
+    --bdx-text-faint: #94a3b8;
+    --bdx-nav-bg: rgba(248,250,252,0.85);
+    --bdx-nav-bg-scroll: rgba(248,250,252,0.95);
+    --bdx-card-bg: rgba(255,255,255,0.9);
+    --bdx-hover-bg: rgba(0,0,0,0.04);
+    --bdx-input-bg: rgba(0,0,0,0.04);
+    --bdx-ring-offset: #f8fafc;
+    --bdx-dot-pattern: rgba(0,0,0,0.04);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -3,21 +3,14 @@
  * Used by codemirror-json-schema for autocomplete + inline validation.
  */
 
-const ICON_NAMES = [
-    'plus', 'settings', 'cpu', 'code', 'user-circle', 'trash-2',
-    'file-code', 'terminal', 'file-type', 'brain', 'wrench', 'search',
-    'paperclip', 'clock', 'sticky-note', 'briefcase', 'clipboard-check',
-    'workflow', 'pencil', 'message-square-text', 'git-pull-request',
-    'alert-triangle', 'badge-check', 'link', 'menu', 'sliders-horizontal',
-    'file-text',
-] as const
+import { ALL_ICON_NAMES } from '@/swipeMenu/ui'
 
 const menuNodeSchema = {
     type: 'object',
     properties: {
         key:       { type: 'string', description: 'Unique identifier for this node' },
         label:     { type: 'string', description: 'Display label' },
-        icon:      { type: 'string', enum: [...ICON_NAMES], description: 'Lucide icon name' },
+        icon:      { type: 'string', enum: ALL_ICON_NAMES, description: 'Icon name' },
         color:     { type: 'string', pattern: '^#[0-9a-fA-F]{3,8}$', description: 'Hex color (e.g. #22d3ee)' },
         parentId:  { type: ['string', 'null'], description: 'Parent node key (null = root)' },
         direction: { type: 'string', enum: ['top', 'right', 'bottom', 'left', 'bottom-right'], description: 'Expansion direction (root nodes only)' },

@@ -12,3 +12,4 @@ After code changes deploy the project locally, see [`agents/DEPLOYMENT.md`](agen
 - Any docs files should be saved in docs/ folder
 - Do not hardcode urls and ports in code, use env vars instead
 - Do not hardcode paths that are outside of the project folder, use env vars instead
+- Do not multiply entities beyond necessity

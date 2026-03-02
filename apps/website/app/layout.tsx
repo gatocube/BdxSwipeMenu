@@ -1,5 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import { Providers } from '../src/components/Providers'
 
 export const metadata: Metadata = {
     title: 'BdxSwipeMenu',
@@ -20,7 +21,7 @@ export default function RootLayout({
                 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet" />
             </head>
             <body className="font-[Inter] antialiased overflow-x-hidden min-h-screen">
-                {children}
+                <Providers>{children}</Providers>
             </body>
         </html>
     )

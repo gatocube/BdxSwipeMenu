@@ -1,52 +1,41 @@
 'use client'
 
 import React from 'react'
-import { btnStyle, resolveIcon, NodeButtonContent } from '@/swipeMenu/ui'
-
-// ── Types ────────────────────────────────────────────────────────────────────
+import { GLOW_NIGHT_THEME, LIGHT_THEME } from '@bdx/swipe-menu'
+import { btnStyle, NodeButtonContent } from '@/swipeMenu/ui'
+import { renderMenuIcon } from '@/swipeMenu/ui'
+import { useTheme } from './ThemeContext'
 
 export interface NodeButtonProps {
-    /** Lucide icon name */
     icon?: string
-    /** Button label */
     label: string
-    /** Resolved hex color */
     color: string
-    /** Button size in px */
     size?: number
-    /** Whether this node is active (expanded) */
     active?: boolean
-    /** Whether this node is dimmed (not in active path) */
     dimmed?: boolean
-    /** Test ID for e2e selection */
     testId?: string
-    /** Additional inline style overrides */
     style?: React.CSSProperties
-    /** Additional class names */
     className?: string
 }
 
-// ── Component ────────────────────────────────────────────────────────────────
-
-/**
- * Shared visual rendering of a menu node button.
- * Used by the MenuConfigurator tiles and anywhere a static node preview is needed.
- * Uses the same `btnStyle` and `NodeButtonContent` as MotionButton in BdxSwipeMenu.
- */
 export function NodeButton({ icon, label, color, size = 56, active, dimmed, testId, style, className }: NodeButtonProps) {
-    const Icon = resolveIcon(icon)
+    const { theme } = useTheme()
+    const t = theme === 'light' ? LIGHT_THEME : GLOW_NIGHT_THEME
+    const iconSize = dimmed ? (size <= 44 ? 16 : 20) : (size <= 44 ? 18 : 24)
+    const iconColor = dimmed ? t.dimmedColor : color
+    const iconElement = icon ? renderMenuIcon(icon, { size: iconSize, color: iconColor }) : null
 
     return (
         <div
             data-testid={testId}
             className={className}
             style={{
-                ...btnStyle(color, size, !!dimmed),
+                ...btnStyle(t, color, size, !!dimmed),
                 ...(active ? { borderColor: `${color}aa`, boxShadow: `0 10px 26px rgba(0,0,0,0.55), 0 0 18px ${color}44` } : {}),
                 ...style,
             }}
         >
-            <NodeButtonContent icon={Icon} label={label} color={color} size={size} dimmed={!!dimmed} />
+            <NodeButtonContent iconElement={iconElement} label={label} color={color} size={size} dimmed={!!dimmed} dimmedColor={t.dimmedColor} />
         </div>
     )
 }

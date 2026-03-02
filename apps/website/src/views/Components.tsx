@@ -7,19 +7,10 @@ import { ComingSoon } from '../components/ComingSoon'
 import { CodeViewer } from '../components/CodeViewer'
 import { cn } from '@/utils/utils'
 
+import { useTheme } from '../components/ThemeContext'
+import { GLOW_NIGHT_THEME, LIGHT_THEME } from '@/swipeMenu/ui'
+
 const BTN_SIZE = 56
-const AUTO_COLORS = [
-    '#22d3ee', // cyan
-    '#a78bfa', // violet
-    '#34d399', // emerald
-    '#fb923c', // orange
-    '#f472b6', // pink
-    '#facc15', // yellow
-    '#60a5fa', // blue
-    '#fb7185', // rose
-    '#4ade80', // green
-    '#c084fc', // purple
-]
 
 // ── Component definitions for the sidebar ────────────────────────────────────
 
@@ -44,22 +35,26 @@ interface SampleButton {
     dimmed?: boolean
 }
 
-const SAMPLE_BUTTONS: SampleButton[] = [
-    { icon: 'plus', label: 'Add', color: AUTO_COLORS[0] },
-    { icon: 'settings', label: 'Config', color: AUTO_COLORS[1] },
-    { icon: 'search', label: 'Search', color: AUTO_COLORS[2] },
-    { icon: 'briefcase', label: '', color: AUTO_COLORS[3] },
-    { icon: 'trash-2', label: 'Delete', color: '#ef4444' },
-    { icon: undefined, label: 'Text', color: AUTO_COLORS[4] },
-    { icon: 'pencil', label: 'Edit', color: AUTO_COLORS[5], dimmed: true },
-    { icon: 'menu', label: 'Menu', color: AUTO_COLORS[0], size: BTN_SIZE },
-]
+function makeSampleButtons(colors: string[]): SampleButton[] {
+    return [
+        { icon: 'plus', label: 'Add', color: colors[0] },
+        { icon: 'settings', label: 'Config', color: colors[1] },
+        { icon: 'search', label: 'Search', color: colors[2] },
+        { icon: 'briefcase', label: '', color: colors[3] },
+        { icon: 'trash-2', label: 'Delete', color: '#ef4444' },
+        { icon: undefined, label: 'Text', color: colors[4] },
+        { icon: 'pencil', label: 'Edit', color: colors[5], dimmed: true },
+        { icon: 'menu', label: 'Menu', color: colors[0], size: BTN_SIZE },
+    ]
+}
 
 // ── BdxButton showcase ──────────────────────────────────────────────────────
 
 function BdxButtonShowcase() {
+    const { theme } = useTheme()
+    const autoColors = (theme === 'light' ? LIGHT_THEME : GLOW_NIGHT_THEME).autoColors
     const [selectedIdx, setSelectedIdx] = useState<number | null>(null)
-    const [buttons, setButtons] = useState<SampleButton[]>(SAMPLE_BUTTONS)
+    const [buttons, setButtons] = useState<SampleButton[]>(() => makeSampleButtons(GLOW_NIGHT_THEME.autoColors))
 
     const handleEditorChange = (parsed: unknown) => {
         if (selectedIdx === null) return
@@ -75,8 +70,8 @@ function BdxButtonShowcase() {
             {/* Buttons area — centered */}
             <div className="flex-1 flex flex-col items-center justify-center px-10 py-8">
                 <div className="text-center mb-8">
-                    <h2 className="text-lg font-bold text-slate-100 mb-1">BdxButton</h2>
-                    <p className="text-sm text-slate-400">
+                    <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--bdx-text)' }}>BdxButton</h2>
+                    <p className="text-sm" style={{ color: 'var(--bdx-text-muted)' }}>
                         The core node button. Supports icons, labels, colors, sizing, and disabled states.
                     </p>
                 </div>
@@ -91,9 +86,9 @@ function BdxButtonShowcase() {
                             <div className={cn(
                                 'rounded-full transition-all duration-150',
                                 selectedIdx === i
-                                    ? 'ring-2 ring-violet-400/50 ring-offset-2 ring-offset-[#070712]'
-                                    : 'group-hover:ring-1 group-hover:ring-white/10 group-hover:ring-offset-1 group-hover:ring-offset-[#070712]'
-                            )}>
+                                    ? 'ring-2 ring-violet-400/50 ring-offset-2'
+                                    : 'group-hover:ring-1 group-hover:ring-violet-400/20 group-hover:ring-offset-1'
+                            )} style={{ '--tw-ring-offset-color': 'var(--bdx-bg)' } as React.CSSProperties}>
                                 <NodeButton
                                     icon={btn.icon}
                                     label={btn.label}
@@ -102,7 +97,7 @@ function BdxButtonShowcase() {
                                     dimmed={btn.dimmed}
                                 />
                             </div>
-                            <span className="text-[9px] text-slate-500 font-mono">
+                            <span className="text-[9px] font-mono" style={{ color: 'var(--bdx-text-faint)' }}>
                                 {btn.size ? `${btn.size}px` : '44px'}
                             </span>
                         </button>
@@ -111,10 +106,10 @@ function BdxButtonShowcase() {
             </div>
 
             {/* Configurator panel — right side */}
-            <div className="w-[320px] shrink-0 m-4 self-stretch bg-[#0a0a14]/90 border border-white/[0.08] rounded-2xl backdrop-blur-xl overflow-hidden flex flex-col">
+            <div className="w-[320px] shrink-0 m-4 self-stretch rounded-2xl backdrop-blur-xl overflow-hidden flex flex-col" style={{ background: 'var(--bdx-surface)', border: '1px solid var(--bdx-border)' }}>
                 {/* Header */}
-                <div className="px-4 py-3 border-b border-white/[0.06]">
-                    <h3 className="text-xs font-black text-slate-300 tracking-tight uppercase">
+                <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--bdx-border)' }}>
+                    <h3 className="text-xs font-black tracking-tight uppercase" style={{ color: 'var(--bdx-text-secondary)' }}>
                         {selectedIdx !== null ? `Button: ${buttons[selectedIdx].label || buttons[selectedIdx].icon || 'unnamed'}` : 'All Buttons'}
                     </h3>
                 </div>
@@ -148,8 +143,8 @@ export function ComponentsPage() {
         <PageLayout>
             <div className="flex-1 flex pt-14">
                 {/* Left sidebar */}
-                <aside className="w-[200px] shrink-0 border-r border-white/[0.06] px-3 py-5 space-y-1">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-3 mb-3 block">
+                <aside className="w-[200px] shrink-0 px-3 py-5 space-y-1" style={{ borderRight: '1px solid var(--bdx-border)' }}>
+                    <span className="text-[10px] font-black uppercase tracking-widest px-3 mb-3 block" style={{ color: 'var(--bdx-text-faint)' }}>
                         Components
                     </span>
                     {COMPONENTS.map(comp => (
@@ -159,13 +154,14 @@ export function ComponentsPage() {
                             className={cn(
                                 'w-full text-left text-sm px-3 py-2 rounded-lg transition-all duration-150 border',
                                 activeId === comp.id
-                                    ? 'font-semibold text-white bg-violet-500/15 border-violet-400/30'
-                                    : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-white/[0.04]'
+                                    ? 'font-semibold text-violet-600 bg-violet-500/15 border-violet-400/30'
+                                    : 'border-transparent'
                             )}
+                            style={activeId !== comp.id ? { color: 'var(--bdx-text-muted)' } : undefined}
                         >
                             {comp.label}
                             {!comp.ready && (
-                                <span className="ml-2 text-[9px] text-slate-600 font-mono">soon</span>
+                                <span className="ml-2 text-[9px] font-mono" style={{ color: 'var(--bdx-text-faint)' }}>soon</span>
                             )}
                         </button>
                     ))}

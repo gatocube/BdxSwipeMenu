@@ -27,13 +27,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-    Plus, Settings, Cpu, Code, UserCircle, Trash2, FileCode, Terminal, FileType,
-    Brain, Wrench, Search, Paperclip, Clock, StickyNote, Briefcase, ClipboardCheck,
-    Workflow, Pencil, MessageSquareText, GitPullRequest, AlertTriangle, BadgeCheck,
-    Link, Menu, SlidersHorizontal, type LucideIcon,
-} from 'lucide-react'
+import { motion, AnimatePresence, type Transition } from 'framer-motion'
+import { renderBuiltinIcon } from './builtinIcons'
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -71,25 +66,82 @@ export interface BdxSwipeMenuProps {
     onRename?: (nodeId: string, newName: string) => void
     onDismiss?: () => void
     children?: React.ReactNode
+    /** Custom icon renderer. Falls back to ~20 built-in SVG icons if not provided. */
+    renderIcon?: (name: string, props: { size: number; color: string }) => React.ReactNode
+    /** Visual theme: 'glow-night' (default), 'light', or a custom BdxThemeConfig object. */
+    theme?: BdxTheme
 }
 
-// ── Icon Map ────────────────────────────────────────────────────────────────────
+// ── Theme ───────────────────────────────────────────────────────────────────────
 
-export const ICON_MAP: Record<string, LucideIcon> = {
-    plus: Plus, settings: Settings, cpu: Cpu, code: Code,
-    'user-circle': UserCircle, 'trash-2': Trash2, 'file-code': FileCode,
-    terminal: Terminal, 'file-type': FileType, brain: Brain, wrench: Wrench,
-    search: Search, paperclip: Paperclip, clock: Clock, 'sticky-note': StickyNote,
-    briefcase: Briefcase, 'clipboard-check': ClipboardCheck, workflow: Workflow,
-    pencil: Pencil, 'message-square-text': MessageSquareText,
-    'git-pull-request': GitPullRequest, 'alert-triangle': AlertTriangle,
-    'badge-check': BadgeCheck, link: Link, menu: Menu,
-    'sliders-horizontal': SlidersHorizontal, 'file-text': FileCode,
+export interface BdxThemeConfig {
+    buttonBg: string
+    buttonBgDimmed: string
+    borderRadius: number
+    backdropBlur: number
+    /** When true, borders and shadows are tinted with the node's color. */
+    glow: boolean
+    borderColor: string
+    shadow: string
+    dimmedColor: string
+    chainLineColor: string
+    hoverScale: number
+    transition: Transition
+    /** Palette for auto-coloring nodes that have no explicit color. */
+    autoColors: string[]
 }
 
-export function resolveIcon(name?: string): LucideIcon | undefined {
-    if (!name) return undefined
-    return ICON_MAP[name] || Plus
+export type BdxTheme = 'glow-night' | 'light' | BdxThemeConfig
+
+/** Bright neon palette — pops on dark backgrounds */
+const GLOW_NIGHT_COLORS = [
+    '#22d3ee', '#a78bfa', '#34d399', '#fb923c', '#f472b6',
+    '#facc15', '#60a5fa', '#fb7185', '#4ade80', '#c084fc',
+]
+
+/** Deeper, higher-contrast palette — reads well on white */
+const LIGHT_COLORS = [
+    '#0891b2', '#7c3aed', '#059669', '#ea580c', '#db2777',
+    '#ca8a04', '#2563eb', '#e11d48', '#16a34a', '#9333ea',
+]
+
+export const GLOW_NIGHT_THEME: BdxThemeConfig = {
+    buttonBg: 'rgba(15,15,26,0.92)',
+    buttonBgDimmed: 'rgba(15,15,26,0.75)',
+    borderRadius: 16,
+    backdropBlur: 12,
+    glow: true,
+    borderColor: 'rgba(148,163,184,0.25)',
+    shadow: '0 4px 16px rgba(0,0,0,0.4)',
+    dimmedColor: '#94a3b8',
+    chainLineColor: '#334155',
+    hoverScale: 1.12,
+    transition: { type: 'spring', stiffness: 400, damping: 20 },
+    autoColors: GLOW_NIGHT_COLORS,
+}
+
+/** @deprecated Use GLOW_NIGHT_THEME */
+export const GLOW_THEME = GLOW_NIGHT_THEME
+
+export const LIGHT_THEME: BdxThemeConfig = {
+    buttonBg: 'rgba(255,255,255,0.95)',
+    buttonBgDimmed: 'rgba(240,240,240,0.9)',
+    borderRadius: 14,
+    backdropBlur: 0,
+    glow: false,
+    borderColor: 'rgba(0,0,0,0.12)',
+    shadow: '0 2px 8px rgba(0,0,0,0.08)',
+    dimmedColor: '#9ca3af',
+    chainLineColor: '#d1d5db',
+    hoverScale: 1.05,
+    transition: { type: 'tween', duration: 0.2, ease: 'easeOut' },
+    autoColors: LIGHT_COLORS,
+}
+
+function resolveTheme(theme: BdxTheme | undefined): BdxThemeConfig {
+    if (!theme || theme === 'glow-night') return GLOW_NIGHT_THEME
+    if (theme === 'light') return LIGHT_THEME
+    return theme
 }
 
 
@@ -98,23 +150,20 @@ export function resolveIcon(name?: string): LucideIcon | undefined {
 const TILE = 64
 export const BTN_SIZE = 56
 
-/** Curated palette for auto-coloring nodes when no explicit color is set */
-export const AUTO_COLORS = [
-    '#22d3ee',   // cyan
-    '#a78bfa',   // violet
-    '#34d399',   // emerald
-    '#fb923c',   // orange
-    '#f472b6',   // pink
-    '#facc15',   // yellow
-    '#60a5fa',   // blue
-    '#fb7185',   // rose
-    '#4ade80',   // green
-    '#c084fc',   // purple
-]
+/** @deprecated Use GLOW_NIGHT_THEME.autoColors or LIGHT_THEME.autoColors */
+export const AUTO_COLORS = GLOW_NIGHT_COLORS
 
 /** Resolve node color: use explicit color or pick from palette by index */
-export function resolveColor(node: MenuNode, index: number): string {
-    return node.color || AUTO_COLORS[index % AUTO_COLORS.length]
+export function resolveColor(node: MenuNode, index: number, colors: string[] = GLOW_NIGHT_COLORS): string {
+    return node.color || colors[index % colors.length]
+}
+
+/** Minimal default state — a single trigger button. Extend with your own nodes. */
+export const DEFAULT_STATE: BdxSwipeMenuState = {
+    activation: 'click',
+    nodes: [
+        { key: '_trigger_', label: 'Menu', icon: 'menu' },
+    ],
 }
 
 function clamp(n: number, min: number, max: number) {
@@ -123,24 +172,31 @@ function clamp(n: number, min: number, max: number) {
 
 // ── Shared button style ─────────────────────────────────────────────────────────
 
-export function btnStyle(color: string, size = 56, dimmed = false): React.CSSProperties {
+export function btnStyle(t: BdxThemeConfig, color: string, size = 56, dimmed = false): React.CSSProperties {
+    const borderColor = dimmed
+        ? t.borderColor
+        : t.glow ? `${color}44` : t.borderColor
+    const boxShadow = dimmed
+        ? t.shadow
+        : t.glow ? `${t.shadow}, 0 0 0 1px ${color}11` : t.shadow
+
     return {
         width: size, height: size,
         flexShrink: 0,
-        borderRadius: size <= 44 ? 12 : 16,
+        borderRadius: Math.min(t.borderRadius, size <= 44 ? 12 : t.borderRadius),
         borderWidth: 1.5,
         borderStyle: 'solid',
-        borderColor: dimmed ? 'rgba(148,163,184,0.25)' : `${color}44`,
-        background: dimmed ? 'rgba(15,15,26,0.75)' : 'rgba(15,15,26,0.92)',
-        backdropFilter: 'blur(12px)',
-        color: dimmed ? '#94a3b8' : color,
+        borderColor,
+        background: dimmed ? t.buttonBgDimmed : t.buttonBg,
+        backdropFilter: t.backdropBlur > 0 ? `blur(${t.backdropBlur}px)` : undefined,
+        color: dimmed ? t.dimmedColor : color,
         cursor: 'pointer',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         gap: 2,
         fontFamily: 'Inter',
         padding: 0,
-        boxShadow: `0 4px 16px rgba(0,0,0,0.4), 0 0 0 1px ${color}11`,
+        boxShadow,
         transition: 'border-color 0.15s, box-shadow 0.15s',
         WebkitTapHighlightColor: 'transparent',
         touchAction: 'none',
@@ -152,30 +208,25 @@ export function btnStyle(color: string, size = 56, dimmed = false): React.CSSPro
 // ── Shared node-button content (icon + label) ───────────────────────────────────
 // Used by MotionButton inside BdxSwipeMenu and by NodeButton in the configurator
 
-export function NodeButtonContent({ icon: Icon, label, color, size = 56, dimmed = false }: {
-    icon?: LucideIcon
+export function NodeButtonContent({ iconElement, label, color, size = 56, dimmed = false, dimmedColor = '#94a3b8' }: {
+    iconElement?: React.ReactNode
     label: string
     color: string
     size?: number
     dimmed?: boolean
+    dimmedColor?: string
 }) {
     return (
         <>
-            {Icon && (
-                <Icon
-                    size={dimmed ? (size <= 44 ? 16 : 20) : (size <= 44 ? 18 : 24)}
-                    strokeWidth={2}
-                    color={dimmed ? '#94a3b8' : color}
-                />
-            )}
+            {iconElement}
             <span style={{
-                fontSize: Icon ? (size <= 44 ? 7 : 8) : (size <= 44 ? 9 : 10),
+                fontSize: iconElement ? (size <= 44 ? 7 : 8) : (size <= 44 ? 9 : 10),
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 letterSpacing: 0.3,
                 lineHeight: 1,
                 opacity: dimmed ? 0.85 : 0.9,
-                color: dimmed ? '#94a3b8' : undefined,
+                color: dimmed ? dimmedColor : undefined,
                 maxWidth: '90%',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -298,16 +349,14 @@ interface FlatBtn {
     key: string
     testId: string
     pos: { x: number; y: number }
-    icon?: LucideIcon
+    iconName?: string
     label: string
     color: string
     delay: number
     active: boolean
     onClick: () => void
     onHover?: () => void
-    /** Path of expanded keys leading to this button */
     chainPath: string[]
-    /** Whether the button is disabled */
     disabled?: boolean
 }
 
@@ -335,7 +384,16 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
         currentLabel = '',
         onAction, onRename, onDismiss,
         children,
+        renderIcon: renderIconProp,
+        theme: themeProp,
     } = props
+
+    const t = resolveTheme(themeProp)
+
+    const renderIcon = useCallback((name: string | undefined, size: number, color: string): React.ReactNode => {
+        if (!name) return null
+        return renderIconProp?.(name, { size, color }) ?? renderBuiltinIcon(name, { size, color })
+    }, [renderIconProp])
 
     const generatedId = useId()
     const nodeId = propNodeId || `bdx-wrap-${generatedId}`
@@ -562,9 +620,9 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
                     key: child.key,
                     testId: `ext-${child.testIdKey || child.key}`,
                     pos: childPos,
-                    icon: resolveIcon(child.icon),
+                    iconName: child.icon,
                     label: child.label,
-                    color: resolveColor(child, state.nodes.indexOf(child)),
+                    color: resolveColor(child, state.nodes.indexOf(child), t.autoColors),
                     delay: i * 0.03,
                     active: childExpanded,
                     disabled: !!child.disabled,
@@ -611,9 +669,9 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
                 key: root.key,
                 testId: `swipe-btn-${root.testIdKey || root.key}`,
                 pos,
-                icon: resolveIcon(root.icon),
+                iconName: root.icon,
                 label: root.label,
-                color: resolveColor(root, state.nodes.indexOf(root)),
+                color: resolveColor(root, state.nodes.indexOf(root), t.autoColors),
                 delay: rIdx * 0.04,
                 active: rootExpanded,
                 chainPath: [root.key],
@@ -716,8 +774,10 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
     }, [activeChainIds, coordsByTestId])
 
     const linkLineColor = expandedPath.length > 0
-        ? (expandedPath[0] === 'config' ? 'rgba(245,158,11,0.8)' : 'rgba(139,92,246,0.85)')
-        : 'rgba(148,163,184,0.7)'
+        ? (t.glow
+            ? (expandedPath[0] === 'config' ? 'rgba(245,158,11,0.8)' : 'rgba(139,92,246,0.85)')
+            : t.chainLineColor)
+        : t.chainLineColor
 
     const stopEvents = {
         onClick: (e: React.MouseEvent) => e.stopPropagation(),
@@ -727,8 +787,8 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
 
     // Standalone trigger button — nodes[0] is the trigger node
     const triggerNode = state.nodes[0]
-    const TriggerIcon = ICON_MAP[triggerNode?.icon ?? 'menu'] ?? ICON_MAP['menu']
-    const triggerColor = triggerNode?.color ?? AUTO_COLORS[0]
+    const triggerIconName = triggerNode?.icon ?? 'menu'
+    const triggerColor = triggerNode?.color ?? t.autoColors[0]
 
     const handleTriggerOpen = useCallback(() => {
         cancelLeave()
@@ -742,18 +802,23 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
         onDismiss?.()
     }, [onDismiss])
 
+    const triggerIconEl = renderIcon(triggerIconName, BTN_SIZE <= 44 ? 18 : 24, triggerColor)
+    const hoverShadow = t.glow
+        ? `0 0 20px ${triggerColor}33, ${t.shadow}`
+        : t.shadow
+    const hoverBorder = t.glow ? `${triggerColor}88` : `${triggerColor}44`
     const standaloneButton = (
         <motion.button
             data-id={nodeId}
             data-testid="bdx-trigger"
-            style={{ ...btnStyle(triggerColor, BTN_SIZE), position: 'relative', zIndex: 1001 }}
-            whileHover={{ scale: 1.12, borderColor: `${triggerColor}88`, boxShadow: `0 0 20px ${triggerColor}33, 0 4px 16px rgba(0,0,0,0.4)` }}
-            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+            style={{ ...btnStyle(t, triggerColor, BTN_SIZE), position: 'relative', zIndex: 1001 }}
+            whileHover={{ scale: t.hoverScale, borderColor: hoverBorder, boxShadow: hoverShadow }}
+            transition={t.transition}
             onPointerEnter={() => { cancelLeave(); if (activationMode === 'swipe') handleTriggerOpen() }}
             onPointerLeave={startLeave}
             onClick={activationMode === 'click' ? handleTriggerOpen : undefined}
         >
-            <NodeButtonContent icon={TriggerIcon} label={currentLabel || 'Menu'} color={triggerColor} size={BTN_SIZE} />
+            <NodeButtonContent iconElement={triggerIconEl} label={currentLabel || 'Menu'} color={triggerColor} size={BTN_SIZE} dimmedColor={t.dimmedColor} />
         </motion.button>
     )
 
@@ -773,6 +838,7 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
                 {menuVisible && (
 
                     <motion.div data-testid="swipe-buttons-menu"
+                        data-bdx-theme={t === GLOW_NIGHT_THEME ? 'glow-night' : t === LIGHT_THEME ? 'light' : 'custom'}
                         key="menu-overlay"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -810,7 +876,7 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
                                     key={b.key}
                                     testId={b.testId}
                                     pos={b.pos}
-                                    icon={b.icon}
+                                    iconName={b.iconName}
                                     label={b.label}
                                     color={b.color}
                                     delay={b.delay}
@@ -822,6 +888,8 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
                                     onMenuEnter={cancelLeave}
                                     onMenuLeave={startLeave}
                                     size={BTN_SIZE}
+                                    theme={t}
+                                    renderIcon={renderIcon}
                                 />
                             ))}
                         </AnimatePresence>
@@ -890,10 +958,10 @@ export function BdxSwipeMenu(props: BdxSwipeMenuProps) {
 
 // ── MotionButton ────────────────────────────────────────────────────────────────
 
-function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size = 48, active, dimmed, onClick, onHover, onMenuEnter, onMenuLeave, activationMode = 'swipe' }: {
+function MotionButton({ testId, pos, iconName, label, color, delay = 0, size = 48, active, dimmed, onClick, onHover, onMenuEnter, onMenuLeave, activationMode = 'swipe', theme: t, renderIcon }: {
     testId: string
     pos: { x: number; y: number }
-    icon?: LucideIcon
+    iconName?: string
     label: string
     color: string
     delay?: number
@@ -905,6 +973,8 @@ function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size =
     onMenuEnter?: () => void
     onMenuLeave?: () => void
     activationMode?: BdxSwipeMenuActivation
+    theme: BdxThemeConfig
+    renderIcon: (name: string | undefined, size: number, color: string) => React.ReactNode
 }) {
     const half = size / 2
     const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -937,12 +1007,14 @@ function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size =
     const handlePointerEnter = useCallback((e: React.PointerEvent) => {
         e.stopPropagation()
         onMenuEnter?.()
-        if (dimmed) return // disabled buttons don't highlight on hover
+        if (dimmed) return
         const el = e.currentTarget as HTMLElement
-        el.style.borderColor = `${color}88`
-        el.style.boxShadow = `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${color}33`
+        el.style.borderColor = t.glow ? `${color}88` : `${color}44`
+        el.style.boxShadow = t.glow
+            ? `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${color}33`
+            : `${t.shadow}`
         if ((activationMode === 'swipe' || activationMode === 'click') && onHover) onHover()
-    }, [activationMode, onHover, color, onMenuEnter, dimmed])
+    }, [activationMode, onHover, color, onMenuEnter, dimmed, t])
 
     const handleClick = useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
@@ -954,6 +1026,17 @@ function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size =
     const circumference = 2 * Math.PI * ringRadius
 
     useEffect(() => { ensureHoldKeyframe() }, [])
+
+    const iconSize = dimmed ? (size <= 44 ? 16 : 20) : (size <= 44 ? 18 : 24)
+    const iconColor = dimmed ? t.dimmedColor : color
+    const iconElement = renderIcon(iconName, iconSize, iconColor)
+
+    const normalBorder = t.glow ? `${color}44` : t.borderColor
+    const normalShadow = t.glow ? `${t.shadow}, 0 0 0 1px ${color}11` : t.shadow
+    const activeBorder = t.glow ? `${color}aa` : `${color}66`
+    const activeShadow = t.glow
+        ? `0 10px 26px rgba(0,0,0,0.55), 0 0 18px ${color}44`
+        : `0 4px 12px rgba(0,0,0,0.15)`
 
     return (
         <motion.button
@@ -970,8 +1053,8 @@ function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size =
             onPointerEnter={handlePointerEnter}
             onPointerLeave={(e) => {
                 const el = e.currentTarget as HTMLElement
-                el.style.borderColor = `${color}44`
-                el.style.boxShadow = `0 4px 16px rgba(0,0,0,0.4), 0 0 0 1px ${color}11`
+                el.style.borderColor = normalBorder
+                el.style.boxShadow = normalShadow
                 handlePointerUp()
                 onMenuLeave?.()
             }}
@@ -980,8 +1063,8 @@ function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size =
                 left: pos.x - half,
                 top: pos.y - half,
                 pointerEvents: 'auto',
-                ...btnStyle(color, size, !!dimmed),
-                ...(active ? { borderColor: `${color}aa`, boxShadow: `0 10px 26px rgba(0,0,0,0.55), 0 0 18px ${color}44` } : {}),
+                ...btnStyle(t, color, size, !!dimmed),
+                ...(active ? { borderColor: activeBorder, boxShadow: activeShadow } : {}),
             }}
         >
             {holdProgress && (
@@ -1011,7 +1094,7 @@ function MotionButton({ testId, pos, icon: Icon, label, color, delay = 0, size =
                     />
                 </svg>
             )}
-            <NodeButtonContent icon={Icon} label={label} color={color} size={size} dimmed={!!dimmed} />
+            <NodeButtonContent iconElement={iconElement} label={label} color={color} size={size} dimmed={!!dimmed} dimmedColor={t.dimmedColor} />
         </motion.button>
     )
 }

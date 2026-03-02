@@ -102,7 +102,7 @@ export const colorPickerTheme = EditorView.baseTheme({
         marginRight: '4px',
         verticalAlign: 'middle',
         marginTop: '-2px',
-        outline: '1px solid rgba(255,255,255,0.15)',
+        outline: '1px solid var(--bdx-border-strong)',
         overflow: 'hidden',
         cursor: 'pointer',
     },

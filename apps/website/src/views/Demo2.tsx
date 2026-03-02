@@ -5,7 +5,10 @@
  */
 
 import { useState, useCallback, useMemo } from 'react'
-import { BdxSwipeMenu, DEFAULT_PRESET, type BdxSwipeMenuActivation, type BdxSwipeMenuState } from '@bdx/swipe-menu'
+import { BdxSwipeMenu, type BdxSwipeMenuActivation, type BdxSwipeMenuState } from '@bdx/swipe-menu'
+import { renderMenuIcon } from '@/swipeMenu/ui'
+import { useTheme } from '../components/ThemeContext'
+import { DEFAULT_PRESET } from '../presets'
 import { PageLayout } from '../components/PageLayout'
 import { ModeSelector } from '../components/ModeSelector'
 import { EventLog } from '../components/EventLog'
@@ -13,6 +16,7 @@ import { DemoNode } from '../components/DemoNode'
 import { useNodeSelection } from '../hooks/useNodeSelection'
 
 export function Demo2Page() {
+    const { theme } = useTheme()
     const [mode, setMode] = useState<BdxSwipeMenuActivation>('click')
     const [centerLabel, setCenterLabel] = useState('Planner')
     const [log, setLog] = useState<string[]>([])
@@ -55,7 +59,7 @@ export function Demo2Page() {
     }, [addLog, selectedId])
 
     return (
-        <PageLayout className="relative overflow-hidden" background="#0a0a14">
+        <PageLayout className="relative overflow-hidden">
 
             <div className="absolute top-[72px] left-1/2 -translate-x-1/2 z-[60]">
                 <ModeSelector mode={mode} onChange={setMode} />
@@ -63,7 +67,7 @@ export function Demo2Page() {
 
             <div className="absolute bottom-4 left-4 z-10">
                 <div className="text-sm font-extrabold text-violet-500 font-mono">Multi-node Demo</div>
-                <div className="text-[8px] text-slate-600 mt-0.5">Three nodes · edge positioning · direction constraints</div>
+                <div className="text-[8px] mt-0.5" style={{ color: 'var(--bdx-text-faint)' }}>Three nodes · edge positioning · direction constraints</div>
             </div>
 
             <EventLog log={log} className="absolute bottom-4 right-4 w-[220px] max-h-[140px] overflow-auto" />
@@ -71,7 +75,7 @@ export function Demo2Page() {
             <div
                 className="absolute inset-0 z-0"
                 style={{
-                    backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)',
+                    backgroundImage: `radial-gradient(circle, var(--bdx-dot-pattern) 1px, transparent 1px)`,
                     backgroundSize: '24px 24px',
                 }}
             />
@@ -117,6 +121,8 @@ export function Demo2Page() {
                     onAction={handleAction}
                     onRename={handleRename}
                     onDismiss={dismiss}
+                    renderIcon={renderMenuIcon}
+                    theme={theme}
                 />
             )}
         </PageLayout>

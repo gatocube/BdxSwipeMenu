@@ -10,7 +10,7 @@ interface ComingSoonProps {
 
 const THEMES = {
     cyan: {
-        bg: 'radial-gradient(900px 700px at 50% 30%, rgba(6,182,212,0.18), transparent 60%), radial-gradient(700px 500px at 70% 60%, rgba(139,92,246,0.12), transparent 50%), #070712',
+        bg: undefined,
         ring: 'bg-[radial-gradient(circle,rgba(6,182,212,0.2)_0%,transparent_70%)] border-cyan-500/25',
         btn: 'border-cyan-500/30 bg-cyan-500/8 text-cyan-300 hover:bg-cyan-500/15 hover:border-cyan-500/50',
         glow1: 'rgba(6,182,212,0.15)',
@@ -19,7 +19,7 @@ const THEMES = {
         glow4: 'rgba(6,182,212,0.1)',
     },
     violet: {
-        bg: 'radial-gradient(900px 700px at 50% 30%, rgba(139,92,246,0.22), transparent 60%), radial-gradient(700px 500px at 70% 60%, rgba(6,182,212,0.12), transparent 50%), #070712',
+        bg: undefined,
         ring: 'bg-[radial-gradient(circle,rgba(139,92,246,0.2)_0%,transparent_70%)] border-violet-500/25',
         btn: 'border-violet-500/30 bg-violet-500/8 text-violet-300 hover:bg-violet-500/15 hover:border-violet-500/50',
         glow1: 'rgba(139,92,246,0.15)',
@@ -39,11 +39,11 @@ export function ComingSoon({ emoji, description, color = 'cyan' }: ComingSoonPro
                         {emoji}
                     </div>
 
-                    <h1 className="text-4xl font-black tracking-tight mb-3 bg-gradient-to-br from-slate-200 to-slate-500 bg-clip-text text-transparent">
+                    <h1 className="text-4xl font-black tracking-tight mb-3" style={{ color: 'var(--bdx-text)' }}>
                         Coming Soon
                     </h1>
 
-                    <p className="text-base text-slate-500 leading-relaxed mb-8">
+                    <p className="text-base leading-relaxed mb-8" style={{ color: 'var(--bdx-text-faint)' }}>
                         {description}
                     </p>
 
